@@ -1119,6 +1119,7 @@ setProducts(formatted);
     dailyops: ["founder_partner", "marketer", "graphic_artist"],
     tasks: ["founder_partner", "marketer", "graphic_artist"],
     workspace: ["founder_partner", "marketer", "graphic_artist"],
+    helpcenter: ["founder_partner", "marketer", "graphic_artist"],
     cloud: ["founder_partner"],
   };
 
@@ -1161,6 +1162,7 @@ setProducts(formatted);
         { label: "Marketing Team", icon: Users, hint: "Members + roles", value: "team", roles: ["founder_partner"] },
         { label: "Campaign Memory", icon: Database, hint: "Saved snapshots", value: "campaigns", roles: ["founder_partner", "marketer"] },
         { label: "System Setup", icon: Cloud, hint: "Cloud database plan", value: "cloud", roles: ["founder_partner"] },
+        { label: "Help Center", icon: ShieldCheck, hint: "SOPs + User Guides", value: "helpcenter", roles: ["founder_partner", "marketer", "graphic_artist"] },
       ],
     },
   ];
@@ -2820,6 +2822,7 @@ ${notesText}`;
                 <TabsTrigger value="tasks" className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-slate-900">Tasks</TabsTrigger>
                 <TabsTrigger value="workspace" className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-slate-900">Product Workspace</TabsTrigger>
                 <TabsTrigger value="cloud" className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-slate-900">Cloud Setup</TabsTrigger>
+                <TabsTrigger value="helpcenter" className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-slate-900">Help Center</TabsTrigger>
               </TabsList>
 
               <TabsContent value="diagnosis" className="mt-5">
@@ -4670,6 +4673,95 @@ ${notesText}`;
                   </Card>
                 </div>
               </TabsContent>
+            
+
+<TabsContent value="helpcenter" className="mt-5">
+  <Card className="rounded-[2rem] bg-white text-slate-900 shadow-xl">
+    <CardContent className="p-8">
+      <Badge className="mb-3 bg-blue-50 text-blue-700 hover:bg-blue-50">
+        Spryve Intelligence SOP
+      </Badge>
+
+      <h2 className="text-3xl font-black">Help Center</h2>
+      <p className="mt-2 max-w-3xl text-slate-600">
+        Use this guide to understand the daily workflow, role responsibilities, and module usage inside Spryve Intelligence.
+      </p>
+
+      <div className="mt-6 grid gap-5 lg:grid-cols-2">
+        <div className="rounded-3xl border border-blue-100 bg-blue-50 p-5">
+          <h3 className="text-xl font-black">1. Daily Owner Workflow</h3>
+          <ul className="mt-4 space-y-2 text-sm text-slate-700">
+            <li>1. Login and check the active workspace.</li>
+            <li>2. Open Dashboard to review revenue, ROAS, CPP, RTS, and scaling status.</li>
+            <li>3. Open Reporting Center to review submitted reports.</li>
+            <li>4. Open Tasks to check team execution progress.</li>
+            <li>5. Decide: scale, improve, pause, or create new test.</li>
+          </ul>
+        </div>
+
+        <div className="rounded-3xl border border-emerald-100 bg-emerald-50 p-5">
+          <h3 className="text-xl font-black">2. Media Buyer SOP</h3>
+          <ul className="mt-4 space-y-2 text-sm text-slate-700">
+            <li>• Submit daily spend, ROAS, CTR, CPC, CPP, winning angle, and action.</li>
+            <li>• Use Reporting Center every end of day.</li>
+            <li>• Update campaign tasks in the Tasks board.</li>
+            <li>• Do not scale without checking CPP, ROAS, and RTS risk.</li>
+            <li>• Save important testing results in Campaign Memory.</li>
+          </ul>
+        </div>
+
+        <div className="rounded-3xl border border-violet-100 bg-violet-50 p-5">
+          <h3 className="text-xl font-black">3. Designer / Creative SOP</h3>
+          <ul className="mt-4 space-y-2 text-sm text-slate-700">
+            <li>• Submit creative type, angle, versions created, status, and asset link.</li>
+            <li>• Use Creative Intelligence for new angle ideas.</li>
+            <li>• Prioritize creatives based on winning ad angles.</li>
+            <li>• Use clear naming: Product - Angle - Version - Date.</li>
+            <li>• Move task status once creative is submitted for review.</li>
+          </ul>
+        </div>
+
+        <div className="rounded-3xl border border-amber-100 bg-amber-50 p-5">
+          <h3 className="text-xl font-black">4. Task Board Rules</h3>
+          <ul className="mt-4 space-y-2 text-sm text-slate-700">
+            <li>• To Do = task is assigned but not started.</li>
+            <li>• In Progress = currently being worked on.</li>
+            <li>• For Review = waiting for owner/team lead approval.</li>
+            <li>• Done = completed and approved.</li>
+            <li>• Always update task status before end of day.</li>
+          </ul>
+        </div>
+
+        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+          <h3 className="text-xl font-black">5. Module Guide</h3>
+          <ul className="mt-4 space-y-2 text-sm text-slate-700">
+            <li>• Dashboard: overall performance and quick diagnosis.</li>
+            <li>• AI Strategist: recommended next actions.</li>
+            <li>• Scaling Center: scale / hold / improve decision support.</li>
+            <li>• Reporting Center: daily ads and creative reports.</li>
+            <li>• Tasks: team execution board.</li>
+            <li>• Products: product memory and campaign tracking.</li>
+            <li>• Campaign Memory: saved testing snapshots.</li>
+          </ul>
+        </div>
+
+        <div className="rounded-3xl border border-rose-100 bg-rose-50 p-5">
+          <h3 className="text-xl font-black">6. Go-Live Checklist</h3>
+          <ul className="mt-4 space-y-2 text-sm text-slate-700">
+            <li>✅ Login tested</li>
+            <li>✅ Workspace created</li>
+            <li>✅ Product added</li>
+            <li>✅ Report submitted</li>
+            <li>✅ Task created</li>
+            <li>✅ Task status updated</li>
+            <li>✅ Data remains after refresh</li>
+          </ul>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+</TabsContent>
+
               <TabsContent value="profitability" className="mt-5">
                 <div className="space-y-5">
                   <Card className="rounded-[2rem] bg-white text-slate-900 shadow-xl">
