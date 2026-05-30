@@ -943,6 +943,12 @@ export default function MarkuzConversionIntelligenceV2() {
     .filter((section) => section.items.length > 0);
 
   useEffect(() => {
+    if (!activeWorkspace?.id) return;
+    loadWorkspaceProducts(activeWorkspace.id);
+    loadWorkspaceReports(activeWorkspace.id);
+  }, [activeWorkspace?.id]);
+
+  useEffect(() => {
     if (!authUser?.id || workspaceLoading) return;
     if (canAccessTab(activeMainTab)) return;
 
@@ -1515,6 +1521,33 @@ export default function MarkuzConversionIntelligenceV2() {
     }
   };
 
+  const loadWorkspaceReports = async (workspaceId = activeWorkspace?.id) => {
+    if (!workspaceId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("daily_reports")
+        .select("id, product_name, report_type, report_data, created_at")
+        .eq("workspace_id", workspaceId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const formattedReports = (data || []).map((report) => ({
+        id: report.id,
+        workspace: inputs.workspace,
+        product: report.product_name,
+        type: report.report_type,
+        date: report.created_at,
+        data: report.report_data || {},
+      }));
+
+      setDailyReports(formattedReports);
+    } catch (error) {
+      console.error("Failed to load daily reports from Supabase", error);
+    }
+  };
+
   const addProduct = async () => {
     const cleanProduct = newProductName.trim();
     if (!cleanProduct) return;
@@ -1552,8 +1585,13 @@ export default function MarkuzConversionIntelligenceV2() {
     }
   };
 
-  const submitMediaBuyerReport = () => {
-    const report = {
+  const submitMediaBuyerReport = async () => {
+    if (!reportProduct) {
+      addActivityLog("Media buyer report not submitted: no product selected.");
+      return;
+    }
+
+    const reportPayload = {
       id: Date.now(),
       workspace: inputs.workspace,
       product: reportProduct,
@@ -1562,15 +1600,61 @@ export default function MarkuzConversionIntelligenceV2() {
       data: { ...mediaBuyerReport }
     };
 
-    setDailyReports((prev) => [report, ...prev]);
-    update("project", reportProduct);
-    update("product", reportProduct);
-    update("adSpend", Number(mediaBuyerReport.spend || 0));
-    addActivityLog(`Submitted media buyer report for ${reportProduct}`);
+    if (!activeWorkspace?.id || !authUser?.id) {
+      setDailyReports((prev) => [reportPayload, ...prev]);
+      update("project", reportProduct);
+      update("product", reportProduct);
+      update("adSpend", Number(mediaBuyerReport.spend || 0));
+      addActivityLog(`Submitted media buyer report locally for ${reportProduct}`);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("daily_reports")
+        .insert({
+          workspace_id: activeWorkspace.id,
+          user_id: authUser.id,
+          product_name: reportProduct,
+          report_type: "Media Buyer",
+          report_data: mediaBuyerReport,
+        })
+        .select("id, product_name, report_type, report_data, created_at")
+        .single();
+
+      if (error) throw error;
+
+      const savedReport = {
+        id: data?.id || Date.now(),
+        workspace: inputs.workspace,
+        product: data?.product_name || reportProduct,
+        type: data?.report_type || "Media Buyer",
+        date: data?.created_at || new Date().toLocaleDateString(),
+        data: data?.report_data || { ...mediaBuyerReport },
+      };
+
+      setDailyReports((prev) => [savedReport, ...prev]);
+      update("project", reportProduct);
+      update("product", reportProduct);
+      update("adSpend", Number(mediaBuyerReport.spend || 0));
+      addActivityLog(`Submitted media buyer report to database for ${reportProduct}`);
+    } catch (error) {
+      console.error("Failed to save media buyer report to Supabase", error);
+      setDailyReports((prev) => [reportPayload, ...prev]);
+      update("project", reportProduct);
+      update("product", reportProduct);
+      update("adSpend", Number(mediaBuyerReport.spend || 0));
+      addActivityLog(`Submitted media buyer report locally because database save failed: ${reportProduct}`);
+    }
   };
 
-  const submitDesignerReport = () => {
-    const report = {
+  const submitDesignerReport = async () => {
+    if (!reportProduct) {
+      addActivityLog("Designer report not submitted: no product selected.");
+      return;
+    }
+
+    const reportPayload = {
       id: Date.now(),
       workspace: inputs.workspace,
       product: reportProduct,
@@ -1579,8 +1663,43 @@ export default function MarkuzConversionIntelligenceV2() {
       data: { ...designerReport }
     };
 
-    setDailyReports((prev) => [report, ...prev]);
-    addActivityLog(`Submitted designer report for ${reportProduct}`);
+    if (!activeWorkspace?.id || !authUser?.id) {
+      setDailyReports((prev) => [reportPayload, ...prev]);
+      addActivityLog(`Submitted designer report locally for ${reportProduct}`);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("daily_reports")
+        .insert({
+          workspace_id: activeWorkspace.id,
+          user_id: authUser.id,
+          product_name: reportProduct,
+          report_type: "Designer",
+          report_data: designerReport,
+        })
+        .select("id, product_name, report_type, report_data, created_at")
+        .single();
+
+      if (error) throw error;
+
+      const savedReport = {
+        id: data?.id || Date.now(),
+        workspace: inputs.workspace,
+        product: data?.product_name || reportProduct,
+        type: data?.report_type || "Designer",
+        date: data?.created_at || new Date().toLocaleDateString(),
+        data: data?.report_data || { ...designerReport },
+      };
+
+      setDailyReports((prev) => [savedReport, ...prev]);
+      addActivityLog(`Submitted designer report to database for ${reportProduct}`);
+    } catch (error) {
+      console.error("Failed to save designer report to Supabase", error);
+      setDailyReports((prev) => [reportPayload, ...prev]);
+      addActivityLog(`Submitted designer report locally because database save failed: ${reportProduct}`);
+    }
   };
 
   const generateDailyMarketingReport = () => {
