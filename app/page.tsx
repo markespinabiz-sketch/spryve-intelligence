@@ -216,27 +216,27 @@ function TabsContent({
 }
 
 const defaultInputs = {
-  workspace: "Markuz Team",
-  project: "ClearSight+ Drops",
-  product: "ClearSight+ Drops",
-  angle: "Takot mabulag / mahal operation",
-  sellingPrice: 699,
-  cogs: 120,
-  shipping: 80,
-  fulfillment: 25,
+  workspace: "Spryve Workspace",
+  project: "",
+  product: "",
+  angle: "",
+  sellingPrice: 0,
+  cogs: 0,
+  shipping: 0,
+  fulfillment: 0,
   packaging: 0,
   insurance: 0,
   vatRate: 0,
   opexRate: 0,
-  codRate: 3,
-  adSpend: 3000,
-  impressions: 45000,
-  clicks: 1500,
+  codRate: 0,
+  adSpend: 0,
+  impressions: 0,
+  clicks: 0,
   atc: 0,
   checkouts: 0,
-  orders: 42,
-  deliveredRate: 70,
-  rtsRate: 30,
+  orders: 0,
+  deliveredRate: 0,
+  rtsRate: 0,
 };
 
 const formatPeso = (value: number | string | null | undefined) => {
@@ -681,67 +681,8 @@ export default function MarkuzConversionIntelligenceV2() {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [passwordUpdateLoading, setPasswordUpdateLoading] = useState(false);
   const [passwordUpdateError, setPasswordUpdateError] = useState("");
-  const [pendingInvites, setPendingInvites] = useState([
-    { id: 101, workspace: "Markuz Team", email: "carla@spryve.local", role: "Copywriter", status: "Pending Invite" },
-  ]);
-  const [newMemberName, setNewMemberName] = useState("");
-  const [newMemberRole, setNewMemberRole] = useState("Media Buyer");
-  const [projectNotes, setProjectNotes] = useState([]);
-  const [performanceAlerts, setPerformanceAlerts] = useState([
-    {
-      id: 1,
-      type: "ROAS Warning",
-      product: "ClearSight+ Drops",
-      message: "ROAS dropped below target for 2 consecutive days.",
-      severity: "High"
-    },
-    {
-      id: 2,
-      type: "Creative Fatigue",
-      product: "PawMission Shirt",
-      message: "CTR decreasing. Prepare new creatives immediately.",
-      severity: "Medium"
-    }
-  ]);
-  const [storageReady, setStorageReady] = useState(false);
-  const [lastSavedAt, setLastSavedAt] = useState("");
-  const [adTestDraft, setAdTestDraft] = useState({
-    campaignName: "",
-    adsetName: "",
-    creativeName: "",
-    audience: "Broad PH 35+",
-    creativeFormat: "Static Image",
-    hook: "",
-    landingPage: "Main WebCake LP",
-    offer: "Buy 2 Get 2",
-  });
-  const [dashboardRange, setDashboardRange] = useState("Today");
-  const [leaderboardFilter, setLeaderboardFilter] = useState("All");
-
-  const [activityLogs, setActivityLogs] = useState([]);
-  const [noteInput, setNoteInput] = useState("");
-  const [teamTasks, setTeamTasks] = useState([
-    {
-      id: 1,
-      workspace: "Markuz Team",
-      project: "ClearSight+ Drops",
-      role: "Media Buyer",
-      assignee: "John",
-      title: "Test softer CTA version",
-      priority: "HIGH",
-      status: "Pending"
-    },
-    {
-      id: 2,
-      workspace: "Markuz Team",
-      project: "ClearSight+ Drops",
-      role: "Designer",
-      assignee: "Alex",
-      title: "Create fear-based hero visual",
-      priority: "MEDIUM",
-      status: "Pending"
-    }
-  ]);
+  const [pendingInvites, setPendingInvites] = useState([]);
+  const [teamTasks, setTeamTasks] = useState([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskRole, setNewTaskRole] = useState("Media Buyer");
   const [newTaskAssignee, setNewTaskAssignee] = useState("");
@@ -754,13 +695,13 @@ export default function MarkuzConversionIntelligenceV2() {
   const [exportText, setExportText] = useState("");
   const [savedCampaigns, setSavedCampaigns] = useState([]);
   const [campaignNameInput, setCampaignNameInput] = useState("");
-  const [products, setProducts] = useState(["ClearSight+ Drops", "PawMission", "ConceiveWell"]);
+  const [products, setProducts] = useState([]);
   const [newProductName, setNewProductName] = useState("");
-  const [reportProduct, setReportProduct] = useState("ClearSight+ Drops");
+  const [reportProduct, setReportProduct] = useState("");
   const [dailyReports, setDailyReports] = useState([]);
-  const [mediaBuyerReport, setMediaBuyerReport] = useState({ spend: 3000, ctr: 2.8, cpc: 8, cpp: 120, roas: 2.6, winningAngle: "Family Concern", action: "+20% Budget", notes: "" });
+  const [mediaBuyerReport, setMediaBuyerReport] = useState({ spend: 0, ctr: 0, cpc: 0, cpp: 0, roas: 0, winningAngle: "", action: "", notes: "" });
   const [reportExportText, setReportExportText] = useState("");
-  const [designerReport, setDesignerReport] = useState({ creativeType: "Static Image", angle: "Fear Based", versions: 3, status: "Submitted", assetLink: "", notes: "" });
+  const [designerReport, setDesignerReport] = useState({ creativeType: "", angle: "", versions: 0, status: "", assetLink: "", notes: "" });
   const [productAssets, setProductAssets] = useState([]);
   const [assetTitle, setAssetTitle] = useState("");
   const [assetType, setAssetType] = useState("Creative");
@@ -1056,7 +997,7 @@ setProducts(formatted);
       setCurrentWorkspaceMembership({ workspace_id: workspace.id, role: "founder_partner", has_full_access: true });
       setUserWorkspaces([workspace]);
       setNeedsWorkspaceSetup(false);
-      setInputs((previous) => ({ ...previous, workspace: workspace.name, project: "First Product Campaign" }));
+      setInputs((previous) => ({ ...previous, workspace: workspace.name, project: "" }));
       setActivityLogs([]);
       setSavedTests([]);
       setDailyReports([]);
@@ -1072,7 +1013,7 @@ setProducts(formatted);
 
   useEffect(() => {
     try {
-      const saved = window.localStorage.getItem("spryve-intelligence-state-v1");
+      const saved = window.localStorage.getItem("spryve-intelligence-state-v3");
       if (!saved) {
         setStorageReady(true);
         return;
@@ -1121,7 +1062,7 @@ setProducts(formatted);
         reportProduct,
         lastSavedAt,
       };
-      window.localStorage.setItem("spryve-intelligence-state-v1", JSON.stringify(snapshot));
+      window.localStorage.setItem("spryve-intelligence-state-v3", JSON.stringify(snapshot));
     } catch (error) {
       console.error("Failed to save Spryve Intelligence local state", error);
     }
@@ -1210,7 +1151,7 @@ setProducts(formatted);
   }, [authUser?.id, workspaceLoading, activeMainTab, systemRole, hasFullWorkspaceAccess]);
 
   const showTestInputPanel = ["plan", "test", "flow", "variation", "learning", "profitability"].includes(activeMainTab);
-  const activeScope = `${inputs.workspace} / ${reportProduct}`;
+  const activeScope = reportProduct ? `${inputs.workspace} / ${reportProduct}` : inputs.workspace;
   const activeProductReports = dailyReports.filter((report) => report.workspace === inputs.workspace && report.product === reportProduct);
   const activeProductAssets = productAssets.filter((asset) => asset.workspace === inputs.workspace && asset.product === reportProduct);
   const activeWorkspaceMembers = workspaceMembers.filter((member) => member.workspace === inputs.workspace);
@@ -2375,7 +2316,7 @@ ${notesText}`;
   const resetLocalWorkspace = () => {
     const confirmed = window.confirm("Reset local Spryve Intelligence data on this browser?");
     if (!confirmed) return;
-    window.localStorage.removeItem("spryve-intelligence-state-v1");
+    window.localStorage.removeItem("spryve-intelligence-state-v3");
     window.location.reload();
   };
 
@@ -2711,7 +2652,7 @@ ${notesText}`;
           <div className="mt-6 rounded-3xl border border-emerald-400/20 bg-emerald-400/10 p-4">
             <p className="text-xs font-bold uppercase tracking-wide text-emerald-200">Active Workspace</p>
             <p className="mt-2 font-black text-white">{inputs.workspace}</p>
-            <p className="mt-1 text-xs text-slate-400">{reportProduct}</p>
+            <p className="mt-1 text-xs text-slate-400">{reportProduct || "Main Workspace"}</p>
           </div>
         </aside>
 
@@ -2769,10 +2710,6 @@ ${notesText}`;
         >
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
-             
-            <div className="mb-3 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-cyan-100">
-  Active: {activeScope}
-</div>
               <h1 className="text-3xl font-black tracking-tight text-white md:text-5xl">Spryve Intelligence System</h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 md:text-base">
                 AI strategist for ecommerce ads, landing page optimization, profitability checks, creative intelligence, and systematic scaling decisions based on actual data.
