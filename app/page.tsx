@@ -891,6 +891,7 @@ export default function MarkuzConversionIntelligenceV2() {
     tasks: ["founder_partner", "marketer", "graphic_artist"],
     workspace: ["founder_partner", "marketer", "graphic_artist"],
     cloud: ["founder_partner"],
+    helpcenter: ["founder_partner", "marketer", "graphic_artist"],
   };
 
   const canAccessTab = (tabValue) => {
@@ -932,6 +933,7 @@ export default function MarkuzConversionIntelligenceV2() {
         { label: "Marketing Team", icon: Users, hint: "Members + roles", value: "team", roles: ["founder_partner"] },
         { label: "Campaign Memory", icon: Database, hint: "Saved snapshots", value: "campaigns", roles: ["founder_partner", "marketer"] },
         { label: "System Setup", icon: Cloud, hint: "Cloud database plan", value: "cloud", roles: ["founder_partner"] },
+        { label: "Help Center", icon: ShieldCheck, hint: "SOPs + user guides", value: "helpcenter", roles: ["founder_partner", "marketer", "graphic_artist"] },
       ],
     },
   ];
@@ -2443,6 +2445,7 @@ ${notesText}`;
                 <TabsTrigger value="tasks" className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-slate-900">Tasks</TabsTrigger>
                 <TabsTrigger value="workspace" className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-slate-900">Product Workspace</TabsTrigger>
                 <TabsTrigger value="cloud" className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-slate-900">Cloud Setup</TabsTrigger>
+                <TabsTrigger value="helpcenter" className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-slate-900">Help Center</TabsTrigger>
               </TabsList>
 
               <TabsContent value="diagnosis" className="mt-5">
@@ -4267,6 +4270,134 @@ ${notesText}`;
                   </Card>
                 </div>
               </TabsContent>
+              <TabsContent value="helpcenter" className="mt-5">
+                <div className="space-y-5">
+                  <Card className="rounded-[2rem] bg-white text-slate-900 shadow-xl">
+                    <CardContent className="p-6 md:p-8">
+                      <Badge className="mb-3 bg-blue-50 text-blue-700 hover:bg-blue-50">Spryve Intelligence SOP</Badge>
+                      <h2 className="text-3xl font-black">Help Center</h2>
+                      <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                        Use this as the official operating manual for Spryve Intelligence System. Follow the workflow daily so ads data, reports, tasks, products, creatives, and scaling decisions stay organized per workspace.
+                      </p>
+
+                      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+                        <div className="rounded-3xl border border-blue-100 bg-blue-50 p-5">
+                          <h3 className="text-xl font-black text-slate-900">1. Daily Owner Workflow</h3>
+                          <ol className="mt-4 space-y-2 text-sm leading-6 text-slate-700">
+                            <li>1. Login and confirm the correct workspace.</li>
+                            <li>2. Select the correct product before reviewing reports.</li>
+                            <li>3. Open Dashboard to check revenue, ROAS, CPP, RTS, and scaling status.</li>
+                            <li>4. Open Reporting Center to review daily media buyer and designer reports.</li>
+                            <li>5. Open Tasks to check execution progress.</li>
+                            <li>6. Decide: scale, hold, improve, pause, or create a new test.</li>
+                          </ol>
+                        </div>
+
+                        <div className="rounded-3xl border border-emerald-100 bg-emerald-50 p-5">
+                          <h3 className="text-xl font-black text-slate-900">2. Media Buyer SOP</h3>
+                          <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-700">
+                            <li>• Submit daily spend, ROAS, CTR, CPC, CPP, winning angle, action, and notes.</li>
+                            <li>• Use Reporting Center at the end of every testing day.</li>
+                            <li>• Save important test results inside Ads Testing Lab or Campaign Memory.</li>
+                            <li>• Do not scale without checking CPP, ROAS, delivered rate, and RTS risk.</li>
+                            <li>• Create tasks for creatives, LP fixes, or retesting when signals are weak.</li>
+                          </ul>
+                        </div>
+
+                        <div className="rounded-3xl border border-violet-100 bg-violet-50 p-5">
+                          <h3 className="text-xl font-black text-slate-900">3. Designer / Creative SOP</h3>
+                          <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-700">
+                            <li>• Submit creative type, angle, versions created, status, asset link, and notes.</li>
+                            <li>• Use Creative Intelligence for new angles and fatigue checks.</li>
+                            <li>• Prioritize creative versions based on winning ad angles.</li>
+                            <li>• Use clear naming: Product - Angle - Version - Date.</li>
+                            <li>• Move task status to For Review once creative is ready.</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="rounded-[2rem] bg-white text-slate-900 shadow-xl">
+                    <CardContent className="p-6 md:p-8">
+                      <Badge className="mb-3 bg-cyan-50 text-cyan-700 hover:bg-cyan-50">Module Manual</Badge>
+                      <h2 className="text-2xl font-black">How To Use Every Module</h2>
+                      <div className="mt-5 grid gap-4 md:grid-cols-2">
+                        {[
+                          { title: "Dashboard", body: "Founder view for overall performance. Use this first to see revenue, estimated net, blended ROAS, CPP, delivered %, RTS %, confirmation rate, and scaling status. This answers: profitable ba, risky ba, or scalable ba?" },
+                          { title: "AI Strategist", body: "Use this after checking performance. It explains the likely root cause, buyer psychology issue, and recommended next actions. Best for deciding whether to fix creative, LP, offer, or buyer quality." },
+                          { title: "Scaling Center", body: "Use this before increasing budget. It checks CTR, CVR, ROAS, CPP, delivered rate, RTS, and gives a final testing decision like change creative, fix LP, protect profit, or controlled scale." },
+                          { title: "Ads Testing Lab", body: "Use this to save test snapshots. Input campaign, adset, creative, audience, hook, LP, offer, and test metrics. This creates memory so Spryve can compare winners over time." },
+                          { title: "Landing Page Analyzer", body: "Use this when CTR is good but conversion is weak. It gives the ideal landing page flow: hero, pain, education, product intro, proof, offer, FAQ, and CTA." },
+                          { title: "Creative Intelligence", body: "Use this to create and compare creative angles such as Fear Based, Hope Based, Family Concern, Doctor Style, Soft Senior Style, and Curiosity Style." },
+                          { title: "Profitability Engine", body: "Use this to check if the product is safe to scale. Input selling price, COGS, shipping, fulfillment, COD, VAT, OPEX, ad spend, orders, delivered %, and RTS %." },
+                          { title: "Reporting Center", body: "Use this daily. Add/select product, submit media buyer report, submit designer report, generate daily marketing report, and review product report history." },
+                          { title: "Tasks", body: "Use this as the execution board. Create tasks, assign role/member, choose priority, due date, and move cards from To Do to In Progress to For Review to Done." },
+                          { title: "Products", body: "Use this as product operating hub. Store product assets, creative links, LP links, reports, tasks, and AI product direction per selected product." },
+                          { title: "Marketing Team", body: "Owner/admin module for inviting members, assigning roles, viewing pending invites, and managing workspace collaboration." },
+                          { title: "Campaign Memory", body: "Use this to save campaign snapshots after important test decisions. It stores diagnosis, awareness stage, metrics, tasks, and notes for future review." },
+                          { title: "System Setup", body: "Owner/admin module for cloud setup, invite-only account flow, Supabase status, database plan, and future backend connection steps." },
+                        ].map((item) => (
+                          <div key={item.title} className="rounded-3xl border border-slate-100 bg-slate-50 p-5">
+                            <h3 className="font-black text-slate-900">{item.title}</h3>
+                            <p className="mt-2 text-sm leading-6 text-slate-600">{item.body}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="rounded-[2rem] bg-white text-slate-900 shadow-xl">
+                    <CardContent className="p-6 md:p-8">
+                      <Badge className="mb-3 bg-emerald-50 text-emerald-700 hover:bg-emerald-50">Go-Live Checklist</Badge>
+                      <h2 className="text-2xl font-black">Recommended Daily Operating Flow</h2>
+                      <div className="mt-5 grid gap-4 lg:grid-cols-2">
+                        <div className="rounded-3xl border border-emerald-100 bg-emerald-50 p-5">
+                          <h3 className="text-lg font-black text-slate-900">Before Running Ads</h3>
+                          <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-700">
+                            <li>✅ Workspace is correct.</li>
+                            <li>✅ Product is added and selected.</li>
+                            <li>✅ Selling price, COGS, shipping, fulfillment, COD, VAT, and OPEX are entered.</li>
+                            <li>✅ Campaign/adset/creative names are prepared.</li>
+                            <li>✅ Landing page and offer are clear.</li>
+                          </ul>
+                        </div>
+                        <div className="rounded-3xl border border-amber-100 bg-amber-50 p-5">
+                          <h3 className="text-lg font-black text-slate-900">End Of Day Reporting</h3>
+                          <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-700">
+                            <li>✅ Media buyer submits spend, ROAS, CTR, CPC, CPP, winning angle, action, and notes.</li>
+                            <li>✅ Designer submits creatives produced and asset links.</li>
+                            <li>✅ Owner reviews Dashboard, AI Strategist, and Scaling Center.</li>
+                            <li>✅ New tasks are created based on findings.</li>
+                            <li>✅ Important results are saved in Campaign Memory or Ads Testing Lab.</li>
+                          </ul>
+                        </div>
+                        <div className="rounded-3xl border border-blue-100 bg-blue-50 p-5">
+                          <h3 className="text-lg font-black text-slate-900">Scaling Rules</h3>
+                          <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-700">
+                            <li>• Scale only if ROAS is above breakeven and CPP is inside safe zone.</li>
+                            <li>• Do not scale if RTS is high or delivered rate is weak.</li>
+                            <li>• Do not change creative, offer, and landing page all at once.</li>
+                            <li>• One major variable per test only.</li>
+                            <li>• Increase budget gradually, usually 15% to 20% first.</li>
+                          </ul>
+                        </div>
+                        <div className="rounded-3xl border border-rose-100 bg-rose-50 p-5">
+                          <h3 className="text-lg font-black text-slate-900">Common Mistakes To Avoid</h3>
+                          <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-700">
+                            <li>• Submitting reports under the wrong product.</li>
+                            <li>• Scaling based only on ROAS without checking CPP and RTS.</li>
+                            <li>• Forgetting to save winning test snapshots.</li>
+                            <li>• Letting tasks stay without status updates.</li>
+                            <li>• Mixing team reports from different workspaces/products.</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
               <TabsContent value="profitability" className="mt-5">
                 <div className="space-y-5">
                   <Card className="rounded-[2rem] bg-white text-slate-900 shadow-xl">
