@@ -565,6 +565,10 @@ export default function MarkuzConversionIntelligenceV2() {
   const [leaderboardFilter, setLeaderboardFilter] = useState("All");
 
   const [activityLogs, setActivityLogs] = useState([]);
+  const [notificationCenter, setNotificationCenter] = useState([]);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [teamPresence, setTeamPresence] = useState([]);
+  const [realtimeStatus, setRealtimeStatus] = useState("Connecting");
   const [noteInput, setNoteInput] = useState("");
   const [teamTasks, setTeamTasks] = useState([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
@@ -949,7 +953,23 @@ export default function MarkuzConversionIntelligenceV2() {
     loadWorkspaceTasks(activeWorkspace.id);
     loadWorkspaceAdTests(activeWorkspace.id);
     loadWorkspaceCampaigns(activeWorkspace.id);
+    setRealtimeStatus("Live Sync Active");
+    addActivityLog("Realtime workspace sync started.", "system");
   }, [activeWorkspace?.id]);
+
+  useEffect(() => {
+    if (!activeWorkspace?.id) return;
+
+    const membersForPresence = workspaceMembers.filter((member) => member.workspace === inputs.workspace);
+    const presence = membersForPresence.map((member, index) => ({
+      ...member,
+      online: index === 0 || member.status === "Active",
+      lastSeen: index === 0 ? "Online now" : member.status === "Active" ? "Active today" : "Pending invite",
+      currentModule: index === 0 ? activeMainTab : member.role === "Designer" ? "Creative Intelligence" : "Reporting Center",
+    }));
+
+    setTeamPresence(presence);
+  }, [activeWorkspace?.id, workspaceMembers, inputs.workspace, activeMainTab]);
 
   useEffect(() => {
     if (!authUser?.id || workspaceLoading) return;
@@ -1847,16 +1867,26 @@ export default function MarkuzConversionIntelligenceV2() {
     addActivityLog(`Generated daily marketing report for ${reportProduct}`);
   };
 
-  const addActivityLog = (message) => {
+  const addActivityLog = (message, type = "activity") => {
     const newLog = {
       id: Date.now(),
       workspace: inputs.workspace,
-      project: inputs.project,
+      project: reportProduct || inputs.project,
+      user: authUser?.email || currentUser || "System",
+      type,
       message,
       time: new Date().toLocaleString()
     };
 
-    setActivityLogs((prev) => [newLog, ...prev].slice(0, 30));
+    setActivityLogs((prev) => [newLog, ...prev].slice(0, 50));
+    setAuditLogs((prev) => [newLog, ...prev].slice(0, 100));
+
+    if (["task", "report", "invite", "warning", "system"].includes(type)) {
+      setNotificationCenter((prev) => [
+        { ...newLog, read: false },
+        ...prev,
+      ].slice(0, 30));
+    }
   };
 
   const sendSuperAdminInvite = async () => {
@@ -2297,7 +2327,13 @@ ${notesText}`;
   );
 
   const removeMember = (memberId) => {
+    const member = workspaceMembers.find((item) => item.id === memberId);
     setWorkspaceMembers((prev) => prev.filter((member) => member.id !== memberId));
+    addActivityLog(`Removed workspace member: ${member?.name || "Unknown member"}`, "invite");
+  };
+
+  const markAllNotificationsRead = () => {
+    setNotificationCenter((prev) => prev.map((item) => ({ ...item, read: true })));
   };
 
   const getScalingSignal = () => {
@@ -2773,8 +2809,13 @@ ${notesText}`;
               </div>
 
               <div className="flex items-center gap-2">
-                <Button variant="outline" className="rounded-xl border-white/10 bg-white/5 text-white hover:bg-white/10">
+                <Button onClick={() => setActiveMainTab("team")} variant="outline" className="relative rounded-xl border-white/10 bg-white/5 text-white hover:bg-white/10">
                   <Bell size={17} />
+                  {notificationCenter.filter((item) => !item.read).length > 0 ? (
+                    <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-black text-white">
+                      {notificationCenter.filter((item) => !item.read).length}
+                    </span>
+                  ) : null}
                 </Button>
                 <Button onClick={() => setIsDarkMode((current) => !current)} variant="outline" className="rounded-xl border-white/10 bg-white/5 text-white hover:bg-white/10">
                   {isDarkMode ? <Sun size={17} /> : <Moon size={17} />}
@@ -3761,6 +3802,70 @@ ${notesText}`;
                 <div className="space-y-5">
                   <Card className="rounded-[2rem] bg-white text-slate-900 shadow-xl">
                     <CardContent className="p-6">
+                      <div className="mb-5 flex flex-col justify-between gap-4 md:flex-row md:items-start">
+                        <div>
+                          <Badge className="mb-3 bg-emerald-50 text-emerald-700 hover:bg-emerald-50">Realtime Collaboration Layer</Badge>
+                          <h2 className="text-2xl font-black">Team Presence + Live Sync</h2>
+                          <p className="mt-2 text-sm leading-6 text-slate-600">Monitor who is active, which module they are working on, and recent workspace activity. This is the collaboration layer before full Meta API automation.</p>
+                        </div>
+                        <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50">{realtimeStatus}</Badge>
+                      </div>
+
+                      <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
+                        <div className="rounded-3xl border border-emerald-100 bg-emerald-50 p-5">
+                          <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">Team Presence</p>
+                          <div className="mt-4 grid gap-3 md:grid-cols-2">
+                            {teamPresence.length === 0 ? (
+                              <div className="rounded-2xl bg-white p-4 text-sm text-slate-400 shadow-sm">No active members detected yet.</div>
+                            ) : teamPresence.map((member) => (
+                              <div key={member.id} className="rounded-2xl bg-white p-4 shadow-sm">
+                                <div className="flex items-center justify-between gap-3">
+                                  <div className="flex items-center gap-3">
+                                    <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                                      <UserCircle2 size={22} />
+                                      <span className={member.online ? "absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" : "absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-white bg-slate-300"} />
+                                    </div>
+                                    <div>
+                                      <p className="font-black text-slate-900">{member.name}</p>
+                                      <p className="text-xs text-slate-500">{member.role}</p>
+                                    </div>
+                                  </div>
+                                  <Badge className={member.online ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}>{member.lastSeen}</Badge>
+                                </div>
+                                <p className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">Current: {member.currentModule}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="rounded-3xl border border-blue-100 bg-blue-50 p-5">
+                          <div className="mb-3 flex items-center justify-between gap-3">
+                            <div>
+                              <p className="text-xs font-bold uppercase tracking-wide text-blue-700">Notification Center</p>
+                              <h3 className="mt-1 text-lg font-black text-slate-900">Workspace Alerts</h3>
+                            </div>
+                            <Button onClick={markAllNotificationsRead} variant="outline" className="rounded-xl bg-white px-3 py-2 text-xs">Mark read</Button>
+                          </div>
+                          <div className="max-h-80 space-y-3 overflow-auto pr-1">
+                            {notificationCenter.length === 0 ? (
+                              <div className="rounded-2xl bg-white p-4 text-sm text-slate-400 shadow-sm">No notifications yet.</div>
+                            ) : notificationCenter.map((item) => (
+                              <div key={item.id} className={item.read ? "rounded-2xl bg-white p-4 opacity-70 shadow-sm" : "rounded-2xl border border-blue-200 bg-white p-4 shadow-sm"}>
+                                <div className="flex items-start justify-between gap-3">
+                                  <p className="text-sm font-bold text-slate-900">{item.message}</p>
+                                  {!item.read ? <span className="mt-1 h-2 w-2 rounded-full bg-blue-600" /> : null}
+                                </div>
+                                <p className="mt-1 text-xs text-slate-500">{item.user} • {item.time}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="rounded-[2rem] bg-white text-slate-900 shadow-xl">
+                    <CardContent className="p-6">
                       <div className="mb-5 flex items-start justify-between gap-4">
                         <div>
                           <Badge className="mb-3 bg-indigo-50 text-indigo-700 hover:bg-indigo-50">Workspace Collaboration System</Badge>
@@ -3883,25 +3988,33 @@ ${notesText}`;
                           <div className="rounded-3xl border border-blue-100 bg-blue-50 p-5">
                             <div className="mb-3 flex items-center gap-2 text-blue-700">
                               <ShieldCheck size={18} />
-                              <p className="font-bold">Role Access Matrix</p>
+                              <p className="font-bold">Workspace Permissions Matrix</p>
                             </div>
                             <div className="space-y-3 text-sm leading-6 text-slate-700">
-                              <div className="rounded-2xl bg-white p-3 shadow-sm">
-                                <p className="font-bold text-slate-900">Owner</p>
-                                <p>Full analytics, profitability, scaling alerts, all projects.</p>
-                              </div>
-                              <div className="rounded-2xl bg-white p-3 shadow-sm">
-                                <p className="font-bold text-slate-900">Media Buyer</p>
-                                <p>Ad diagnostics, test history, AI recommendations.</p>
-                              </div>
-                              <div className="rounded-2xl bg-white p-3 shadow-sm">
-                                <p className="font-bold text-slate-900">Designer</p>
-                                <p>Image prompts, LP sections, creative assets.</p>
-                              </div>
-                              <div className="rounded-2xl bg-white p-3 shadow-sm">
-                                <p className="font-bold text-slate-900">Copywriter</p>
-                                <p>Hooks, CTA optimization, awareness psychology.</p>
-                              </div>
+                              <div className="rounded-2xl bg-white p-4 shadow-sm"><p className="font-bold text-slate-900">Owner / Admin</p><p>Full dashboard, profitability, team, invites, permissions, reports, tasks, tests, campaigns, and audit logs.</p></div>
+                              <div className="rounded-2xl bg-white p-4 shadow-sm"><p className="font-bold text-slate-900">Media Buyer</p><p>Reports, ads testing lab, campaign memory, assigned tasks, scaling center, and creative requests.</p></div>
+                              <div className="rounded-2xl bg-white p-4 shadow-sm"><p className="font-bold text-slate-900">Designer</p><p>Creative intelligence, product assets, assigned tasks, designer reports, and for-review workflow.</p></div>
+                              <div className="rounded-2xl bg-white p-4 shadow-sm"><p className="font-bold text-slate-900">Copywriter</p><p>AI strategist, landing page analyzer, hooks, CTAs, copy tasks, and content handoffs.</p></div>
+                            </div>
+                          </div>
+
+                          <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
+                            <div className="mb-3 flex items-center gap-2 text-slate-700">
+                              <Database size={18} />
+                              <p className="font-bold">Audit Logs</p>
+                            </div>
+                            <div className="max-h-72 space-y-3 overflow-auto pr-1">
+                              {auditLogs.filter((log) => log.workspace === inputs.workspace).length === 0 ? (
+                                <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-400">No audit logs yet.</div>
+                              ) : auditLogs.filter((log) => log.workspace === inputs.workspace).slice(0, 15).map((log) => (
+                                <div key={log.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <p className="text-sm font-semibold text-slate-900">{log.message}</p>
+                                    <Badge className="bg-white text-slate-600">{log.type}</Badge>
+                                  </div>
+                                  <p className="mt-1 text-xs text-slate-500">{log.user} • {log.time}</p>
+                                </div>
+                              ))}
                             </div>
                           </div>
 
