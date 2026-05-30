@@ -611,7 +611,8 @@ export default function MarkuzConversionIntelligenceV2() {
       if (!mounted) return;
       setAuthCheckTimedOut(true);
       setAuthLoading(false);
-    }, 7000);
+      setWorkspaceLoading(false);
+    }, 4500);
 
     const checkSession = async () => {
       try {
@@ -2671,6 +2672,33 @@ ${notesText}`;
     setInputs((previous) => ({ ...previous, [key]: value }));
   };
 
+  if (authCheckTimedOut) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center bg-slate-950 p-6 text-white">
+        <div className="w-full max-w-md rounded-[2rem] border border-white/10 bg-white/5 p-8 text-center shadow-2xl">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-400/10 text-amber-200">
+            <AlertTriangle size={28} />
+          </div>
+          <h1 className="text-2xl font-black">Open login page</h1>
+          <p className="mt-2 text-sm leading-6 text-slate-400">Messenger browser can block session storage. Tap the button below or open this link in Safari/Chrome.</p>
+          <a
+            href="/login"
+            className="mt-6 block w-full rounded-2xl bg-cyan-500 px-4 py-3 text-sm font-black text-slate-950 shadow-lg shadow-cyan-500/20"
+          >
+            Continue to Login
+          </a>
+          <button
+            type="button"
+            onClick={() => { window.location.href = "/login"; }}
+            className="mt-3 w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-black text-white"
+          >
+            Force Open Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (authLoading || workspaceLoading) {
     return (
       <div className="flex min-h-[100dvh] items-center justify-center bg-slate-950 p-6 text-white">
@@ -2683,12 +2711,18 @@ ${notesText}`;
           <div className="mx-auto mt-5 h-1.5 w-40 overflow-hidden rounded-full bg-white/10">
             <div className="h-full w-1/2 animate-pulse rounded-full bg-cyan-300" />
           </div>
-          <button
-            type="button"
-            onClick={() => router.replace("/login")}
-            className="mt-6 w-full rounded-2xl bg-cyan-500 px-4 py-3 text-sm font-black text-slate-950 shadow-lg shadow-cyan-500/20"
+          <a
+            href="/login"
+            className="mt-6 block w-full rounded-2xl bg-cyan-500 px-4 py-3 text-sm font-black text-slate-950 shadow-lg shadow-cyan-500/20"
           >
             Go to Login
+          </a>
+          <button
+            type="button"
+            onClick={() => { window.location.href = "/login"; }}
+            className="mt-3 w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-black text-white"
+          >
+            Force Open Login
           </button>
           <p className="mt-3 text-xs leading-5 text-slate-500">If this is opened inside Messenger and keeps loading, tap the menu and choose Open in Browser/Safari/Chrome.</p>
         </div>
