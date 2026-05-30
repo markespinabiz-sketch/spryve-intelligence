@@ -502,6 +502,7 @@ const generatedAssets = {
 export default function MarkuzConversionIntelligenceV2() {
   const router = useRouter();
   const [authLoading, setAuthLoading] = useState(true);
+  const [authCheckTimedOut, setAuthCheckTimedOut] = useState(false);
   const [authUser, setAuthUser] = useState(null);
   const [authProfile, setAuthProfile] = useState(null);
   const [workspaceLoading, setWorkspaceLoading] = useState(false);
@@ -604,17 +605,41 @@ export default function MarkuzConversionIntelligenceV2() {
     "Workspace": false,
   });
   useEffect(() => {
-    const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      const sessionUser = data?.session?.user || null;
+    let mounted = true;
 
-      if (!sessionUser) {
-        router.replace("/login");
-        return;
-      }
-
-      setAuthUser(sessionUser);
+    const timeout = setTimeout(() => {
+      if (!mounted) return;
+      setAuthCheckTimedOut(true);
       setAuthLoading(false);
+    }, 7000);
+
+    const checkSession = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (!mounted) return;
+
+        if (error) throw error;
+
+        const sessionUser = data?.session?.user || null;
+
+        if (!sessionUser) {
+          setAuthUser(null);
+          setAuthLoading(false);
+          router.replace("/login");
+          return;
+        }
+
+        setAuthUser(sessionUser);
+        setAuthLoading(false);
+      } catch (error) {
+        console.error("Auth session check failed", error);
+        if (!mounted) return;
+        setAuthUser(null);
+        setAuthLoading(false);
+        router.replace("/login");
+      } finally {
+        clearTimeout(timeout);
+      }
     };
 
     checkSession();
@@ -623,10 +648,15 @@ export default function MarkuzConversionIntelligenceV2() {
       const sessionUser = session?.user || null;
       setAuthUser(sessionUser);
       setAuthLoading(false);
+      setAuthCheckTimedOut(false);
       if (!sessionUser) router.replace("/login");
     });
 
-    return () => listener?.subscription?.unsubscribe?.();
+    return () => {
+      mounted = false;
+      clearTimeout(timeout);
+      listener?.subscription?.unsubscribe?.();
+    };
   }, [router]);
 
   const logout = async () => {
@@ -2643,13 +2673,45 @@ ${notesText}`;
 
   if (authLoading || workspaceLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 p-6 text-white">
-        <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 text-center shadow-2xl">
+      <div className="flex min-h-[100dvh] items-center justify-center bg-slate-950 p-6 text-white">
+        <div className="w-full max-w-md rounded-[2rem] border border-white/10 bg-white/5 p-8 text-center shadow-2xl">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-cyan-400/10 text-cyan-200">
             <BrainCircuit size={28} />
           </div>
           <h1 className="text-2xl font-black">Spryve Intelligence System</h1>
           <p className="mt-2 text-sm text-slate-400">Checking account and workspace access...</p>
+          <div className="mx-auto mt-5 h-1.5 w-40 overflow-hidden rounded-full bg-white/10">
+            <div className="h-full w-1/2 animate-pulse rounded-full bg-cyan-300" />
+          </div>
+          <button
+            type="button"
+            onClick={() => router.replace("/login")}
+            className="mt-6 w-full rounded-2xl bg-cyan-500 px-4 py-3 text-sm font-black text-slate-950 shadow-lg shadow-cyan-500/20"
+          >
+            Go to Login
+          </button>
+          <p className="mt-3 text-xs leading-5 text-slate-500">If this is opened inside Messenger and keeps loading, tap the menu and choose Open in Browser/Safari/Chrome.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (authCheckTimedOut) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center bg-slate-950 p-6 text-white">
+        <div className="w-full max-w-md rounded-[2rem] border border-white/10 bg-white/5 p-8 text-center shadow-2xl">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-400/10 text-amber-200">
+            <AlertTriangle size={28} />
+          </div>
+          <h1 className="text-2xl font-black">Session check took too long</h1>
+          <p className="mt-2 text-sm leading-6 text-slate-400">Messenger in-app browser can sometimes block auth/session storage. Open the app in Safari/Chrome for best result.</p>
+          <button
+            type="button"
+            onClick={() => router.replace("/login")}
+            className="mt-6 w-full rounded-2xl bg-cyan-500 px-4 py-3 text-sm font-black text-slate-950 shadow-lg shadow-cyan-500/20"
+          >
+            Continue to Login
+          </button>
         </div>
       </div>
     );
@@ -2739,7 +2801,7 @@ ${notesText}`;
   }
 
   return (
-    <div className={isDarkMode ? "min-h-screen bg-slate-950 text-slate-100" : "min-h-screen bg-slate-100 text-slate-900"}>
+    <div className={isDarkMode ? "min-h-[100dvh] bg-slate-950 text-slate-100" : "min-h-[100dvh] bg-slate-100 text-slate-900"}>
       <div className="flex min-h-screen">
         <aside className={(sidebarOpen ? "translate-x-0" : "-translate-x-full") + " fixed inset-y-0 left-0 z-40 w-80 border-r border-white/10 bg-slate-950/95 p-4 backdrop-blur-xl transition-transform duration-300 lg:static lg:translate-x-0"}>
           <div className="mb-6 overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-emerald-500/10 p-5 shadow-2xl">
