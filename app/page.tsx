@@ -3833,6 +3833,62 @@ ${notesText}`;
               </TabsContent>
 
               <TabsContent value="tasks" className="mt-5">
+                <Card className="mb-5 rounded-[2rem] border-0 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600 text-white shadow-2xl">
+                  <CardContent className="flex flex-col gap-5 p-6 md:flex-row md:items-center md:justify-between md:p-8">
+                    <div className="max-w-2xl">
+                      <Badge className="mb-3 bg-white/20 text-white hover:bg-white/20">AI Task Generator</Badge>
+                      <h2 className="text-3xl font-black">AI Generated Task Recommendations</h2>
+                      <p className="mt-2 text-sm leading-6 text-white/80">
+                        Spryve Intelligence analyzes ROAS, CTR, CPP, delivered rate, RTS risk, creative fatigue, and landing page performance to recommend next-step execution tasks automatically.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3">
+                      <Button className="rounded-2xl bg-white text-slate-900 hover:bg-slate-100">
+                        Generate Tasks
+                      </Button>
+                      <Button variant="outline" className="rounded-2xl border-white/30 bg-white/10 text-white hover:bg-white/20">
+                        Save To Board
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="mb-5 grid gap-4 lg:grid-cols-3">
+                  {[
+                    {
+                      title: "Creative Refresh Needed",
+                      priority: "High Priority",
+                      body: "CTR dropping while CPC increasing. Create 3 new hook variations focused on stronger emotional angles.",
+                    },
+                    {
+                      title: "Landing Page Optimization",
+                      priority: "Medium Priority",
+                      body: "High CTR but weak CVR detected. Improve hero section clarity, testimonials, and CTA placement.",
+                    },
+                    {
+                      title: "Scaling Protection",
+                      priority: "Urgent",
+                      body: "ROAS still profitable but RTS increasing. Review targeting quality and confirmation process before scaling further.",
+                    },
+                  ].map((task) => (
+                    <Card key={task.title} className="rounded-[2rem] border-0 bg-white shadow-xl">
+                      <CardContent className="p-6">
+                        <Badge className="bg-violet-100 text-violet-700 hover:bg-violet-100">{task.priority}</Badge>
+                        <h3 className="mt-4 text-xl font-black text-slate-900">{task.title}</h3>
+                        <p className="mt-2 text-sm leading-6 text-slate-600">{task.body}</p>
+                        <div className="mt-5 flex gap-2">
+                          <Button size="sm" className="rounded-xl bg-slate-900 text-white hover:bg-slate-800">
+                            Create Task
+                          </Button>
+                          <Button size="sm" variant="outline" className="rounded-xl">
+                            Assign Team
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
                 <div className="space-y-5">
                   <Card className="rounded-[2rem] bg-slate-900 text-white shadow-xl">
                     <CardContent className="p-5">
@@ -4321,7 +4377,15 @@ ${notesText}`;
                   <Card className="rounded-[2rem] bg-white text-slate-900 shadow-xl">
                     <CardContent className="p-6 md:p-8">
                       <Badge className="mb-3 bg-cyan-50 text-cyan-700 hover:bg-cyan-50">Module Manual</Badge>
-                      <h2 className="text-2xl font-black">How To Use Every Module</h2>
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <h2 className="text-2xl font-black">How To Use Every Module</h2>
+                          <p className="mt-1 text-sm text-slate-500">Operational guide for every Spryve Intelligence module.</p>
+                        </div>
+                        <Button className="rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg hover:opacity-90">
+                          Generate AI Tasks
+                        </Button>
+                      </div>
                       <div className="mt-5 grid gap-4 md:grid-cols-2">
                         {[
                           { title: "Dashboard", body: "Founder view for overall performance. Use this first to see revenue, estimated net, blended ROAS, CPP, delivered %, RTS %, confirmation rate, and scaling status. This answers: profitable ba, risky ba, or scalable ba?" },
@@ -4332,7 +4396,7 @@ ${notesText}`;
                           { title: "Creative Intelligence", body: "Use this to create and compare creative angles such as Fear Based, Hope Based, Family Concern, Doctor Style, Soft Senior Style, and Curiosity Style." },
                           { title: "Profitability Engine", body: "Use this to check if the product is safe to scale. Input selling price, COGS, shipping, fulfillment, COD, VAT, OPEX, ad spend, orders, delivered %, and RTS %." },
                           { title: "Reporting Center", body: "Use this daily. Add/select product, submit media buyer report, submit designer report, generate daily marketing report, and review product report history." },
-                          { title: "Tasks", body: "Use this as the execution board. Create tasks, assign role/member, choose priority, due date, and move cards from To Do to In Progress to For Review to Done." },
+                          { title: "Tasks", body: "Use this as the execution board. Create tasks, assign role/member, choose priority, due date, and move cards from To Do to In Progress to For Review to Done. Includes AI-generated task recommendations based on campaign performance and diagnostics." },
                           { title: "Products", body: "Use this as product operating hub. Store product assets, creative links, LP links, reports, tasks, and AI product direction per selected product." },
                           { title: "Marketing Team", body: "Owner/admin module for inviting members, assigning roles, viewing pending invites, and managing workspace collaboration." },
                           { title: "Campaign Memory", body: "Use this to save campaign snapshots after important test decisions. It stores diagnosis, awareness stage, metrics, tasks, and notes for future review." },
