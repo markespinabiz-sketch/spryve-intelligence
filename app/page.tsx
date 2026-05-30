@@ -4,16 +4,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import {
-  loadWorkspaceProducts,
-  createWorkspaceProduct,
-  loadWorkspaceReports,
-  createMediaBuyerReport,
-  createDesignerReport,
-  loadWorkspaceTasks,
-  createWorkspaceTask,
-  updateWorkspaceTaskStatus,
-} from "@/lib/workspaceData";
 import { motion } from "framer-motion";
 import {
   AlertTriangle,
@@ -47,21 +37,11 @@ import {
   Wand2,
 } from "lucide-react";
 
-function cn(...classes: Array<string | false | null | undefined>) {
+function cn(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-function Button({
-  children,
-  className = "",
-  variant = "default",
-  ...props
-}: {
-  children: React.ReactNode;
-  className?: string;
-  variant?: "default" | "outline" | "ghost";
-  [key: string]: any;
-}) {
+function Button({ children, className = "", variant = "default", ...props }) {
   const base = "inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold transition disabled:pointer-events-none disabled:opacity-50";
   const variants = {
     default: "bg-blue-600 text-white hover:bg-blue-700",
@@ -87,16 +67,7 @@ function Input({ className = "", ...props }) {
   );
 }
 
-function Badge({
-  children,
-  className = "",
-  ...props
-}: {
-  children: React.ReactNode;
-  className?: string;
-  [key: string]: any;
-}) {
-
+function Badge({ children, className = "", ...props }) {
   return (
     <span
       className={cn(
@@ -110,15 +81,7 @@ function Badge({
   );
 }
 
-function Card({
-  children,
-  className = "",
-  ...props
-}: {
-  children: React.ReactNode;
-  className?: string;
-  [key: string]: any;
-}) {
+function Card({ children, className = "", ...props }) {
   return (
     <div className={cn("rounded-2xl border border-slate-200 bg-white", className)} {...props}>
       {children}
@@ -126,15 +89,7 @@ function Card({
   );
 }
 
-function CardContent({
-  children,
-  className = "",
-  ...props
-}: {
-  children: React.ReactNode;
-  className?: string;
-  [key: string]: any;
-}) {
+function CardContent({ children, className = "", ...props }) {
   return (
     <div className={cn("p-6", className)} {...props}>
       {children}
@@ -142,25 +97,9 @@ function CardContent({
   );
 }
 
-const TabsContext = createContext<{
-  value: string;
-  onValueChange: (value: string) => void;
-}>({
-  value: "",
-  onValueChange: () => {},
-});
+const TabsContext = createContext({ value: "", onValueChange: () => {} });
 
-function Tabs({
-  value,
-  onValueChange,
-  children,
-  className = "",
-}: {
-  value: string;
-  onValueChange: (value: string) => void;
-  children: React.ReactNode;
-  className?: string;
-}) {
+function Tabs({ value, onValueChange, children, className = "" }) {
   return (
     <TabsContext.Provider value={{ value, onValueChange }}>
       <div className={className}>{children}</div>
@@ -168,25 +107,11 @@ function Tabs({
   );
 }
 
-function TabsList({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
+function TabsList({ children, className = "" }) {
   return <div className={className}>{children}</div>;
 }
 
-function TabsTrigger({
-  value,
-  children,
-  className = "",
-}: {
-  value: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
+function TabsTrigger({ value, children, className = "" }) {
   const context = useContext(TabsContext);
   const active = context.value === value;
   return (
@@ -201,22 +126,14 @@ function TabsTrigger({
   );
 }
 
-function TabsContent({
-  value,
-  children,
-  className = "",
-}: {
-  value: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
+function TabsContent({ value, children, className = "" }) {
   const context = useContext(TabsContext);
   if (context.value !== value) return null;
   return <div className={className}>{children}</div>;
 }
 
 const defaultInputs = {
-  workspace: "Spryve Workspace",
+  workspace: "",
   project: "",
   product: "",
   angle: "",
@@ -239,25 +156,15 @@ const defaultInputs = {
   rtsRate: 0,
 };
 
-const formatPeso = (value: number | string | null | undefined) => {
+const formatPeso = (value) => {
   return "₱" + Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
 };
 
-const formatPercent = (value: number | string | null | undefined) => {
+const formatPercent = (value) => {
   return Number(value || 0).toFixed(2) + "%";
 };
 
-function InputField({
-  label,
-  value,
-  onChange,
-  type = "number",
-}: {
-  label: string;
-  value: string | number;
-  onChange: (value: string | number) => void;
-  type?: string;
-}) {
+function InputField({ label, value, onChange, type = "number" }) {
   const safeValue = value ?? (type === "number" ? 0 : "");
 
   return (
@@ -266,7 +173,7 @@ function InputField({
       <Input
         type={type}
         value={safeValue}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+        onChange={(e) => {
           if (type === "number") {
             onChange(e.target.value === "" ? 0 : Number(e.target.value));
           } else {
@@ -279,19 +186,7 @@ function InputField({
   );
 }
 
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  sub,
-  tone = "blue",
-}: {
-  icon: any;
-  label: string;
-  value: React.ReactNode;
-  sub?: React.ReactNode;
-  tone?: "blue" | "green" | "amber" | "red" | "violet";
-}) {
+function StatCard({ icon: Icon, label, value, sub, tone = "blue" }) {
   const tones = {
     blue: "from-blue-50 to-cyan-50 border-blue-100 text-blue-700",
     green: "from-emerald-50 to-green-50 border-emerald-100 text-emerald-700",
@@ -318,15 +213,7 @@ function StatCard({
   );
 }
 
-function ActionItem({
-  title,
-  body,
-  priority = "HIGH",
-}: {
-  title: string;
-  body: string;
-  priority?: "HIGH" | "MEDIUM" | "LOW";
-}) {
+function ActionItem({ title, body, priority = "HIGH" }) {
   const colors = {
     HIGH: "bg-rose-50 text-rose-700 border-rose-100",
     MEDIUM: "bg-amber-50 text-amber-700 border-amber-100",
@@ -372,25 +259,6 @@ function ScoreBar({ label, value, note }) {
       <div className="h-2 overflow-hidden rounded-full bg-slate-100">
         <div className={"h-full rounded-full " + tone} style={{ width: width + "%" }} />
       </div>
-    </div>
-  );
-}
-function HelpAccordion({ title, open, onToggle, children }) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-      <button
-        onClick={onToggle}
-        className="flex w-full items-center justify-between px-4 py-3 text-left"
-      >
-        <span className="text-sm font-bold text-slate-900">{title}</span>
-        <span className="text-slate-400">{open ? "−" : "+"}</span>
-      </button>
-
-      {open && (
-        <div className="border-t border-slate-100 px-4 py-4">
-          {children}
-        </div>
-      )}
     </div>
   );
 }
@@ -660,12 +528,7 @@ export default function MarkuzConversionIntelligenceV2() {
   const [imageStyleMode, setImageStyleMode] = useState("Premium Medical");
   const [variationMode, setVariationMode] = useState("Fear Based");
   const [savedTests, setSavedTests] = useState([]);
-  const [workspaceMembers, setWorkspaceMembers] = useState([
-    { id: 1, workspace: "Markuz Team", name: "Mark", role: "Owner", status: "Active" },
-    { id: 2, workspace: "Markuz Team", name: "John", role: "Media Buyer", status: "Active" },
-    { id: 3, workspace: "Markuz Team", name: "Alex", role: "Designer", status: "Active" },
-    { id: 4, workspace: "Markuz Team", name: "Carla", role: "Copywriter", status: "Pending" },
-  ]);
+  const [workspaceMembers, setWorkspaceMembers] = useState([]);
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [invitePassword, setInvitePassword] = useState("");
@@ -682,6 +545,27 @@ export default function MarkuzConversionIntelligenceV2() {
   const [passwordUpdateLoading, setPasswordUpdateLoading] = useState(false);
   const [passwordUpdateError, setPasswordUpdateError] = useState("");
   const [pendingInvites, setPendingInvites] = useState([]);
+  const [newMemberName, setNewMemberName] = useState("");
+  const [newMemberRole, setNewMemberRole] = useState("Media Buyer");
+  const [projectNotes, setProjectNotes] = useState([]);
+  const [performanceAlerts, setPerformanceAlerts] = useState([]);
+  const [storageReady, setStorageReady] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState("");
+  const [adTestDraft, setAdTestDraft] = useState({
+    campaignName: "",
+    adsetName: "",
+    creativeName: "",
+    audience: "Broad PH 35+",
+    creativeFormat: "Static Image",
+    hook: "",
+    landingPage: "Main WebCake LP",
+    offer: "Buy 2 Get 2",
+  });
+  const [dashboardRange, setDashboardRange] = useState("Today");
+  const [leaderboardFilter, setLeaderboardFilter] = useState("All");
+
+  const [activityLogs, setActivityLogs] = useState([]);
+  const [noteInput, setNoteInput] = useState("");
   const [teamTasks, setTeamTasks] = useState([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskRole, setNewTaskRole] = useState("Media Buyer");
@@ -715,113 +599,32 @@ export default function MarkuzConversionIntelligenceV2() {
     "Performance Lab": false,
     "Workspace": false,
   });
-  const [helpSections, setHelpSections] = useState({
-  dashboard: true,
-  reporting: false,
-  tasks: false,
-  products: false,
-  scaling: false,
-  campaigns: false,
-});
   useEffect(() => {
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
       const sessionUser = data?.session?.user || null;
-  
+
       if (!sessionUser) {
         router.replace("/login");
         return;
       }
-  
+
       setAuthUser(sessionUser);
       setAuthLoading(false);
     };
-  
+
     checkSession();
-  
+
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       const sessionUser = session?.user || null;
       setAuthUser(sessionUser);
       setAuthLoading(false);
       if (!sessionUser) router.replace("/login");
     });
-  
-    return () => {
-      listener?.subscription?.unsubscribe?.();
-    };
+
+    return () => listener?.subscription?.unsubscribe?.();
   }, [router]);
-  
-  useEffect(() => {
-    if (!activeWorkspace?.id) return;
-  
-    const loadProducts = async () => {
-      try {
-        const data = await loadWorkspaceProducts(activeWorkspace.id);
-  
-        const formatted = data.map((item: any) => item.name);
 
-setProducts(formatted);
-      } catch (error) {
-        console.error("Failed to load products", error);
-      }
-    };
-  
-    loadProducts();
-  }, [activeWorkspace?.id]);
-
-  useEffect(() => {
-    if (!activeWorkspace?.id) return;
-  
-    const loadReports = async () => {
-      try {
-        const data = await loadWorkspaceReports(activeWorkspace.id);
-  
-        const formatted = data.map((item: any) => ({
-          id: item.id,
-          workspace: inputs.workspace,
-          product: item.product_name,
-          type: item.report_type || item.role_type,
-          date: item.report_date || item.created_at,
-          data: item.report_data || {},
-        }));
-  
-        setDailyReports(formatted);
-      } catch (error) {
-        console.error("Failed to load reports", error);
-      }
-    };
-  
-    loadReports();
-  }, [activeWorkspace?.id, inputs.workspace]);
-  
-  useEffect(() => {
-    if (!activeWorkspace?.id) return;
-  
-    const loadTasks = async () => {
-      try {
-        const data = await loadWorkspaceTasks(activeWorkspace.id);
-  
-        const formatted = data.map((item: any) => ({
-          id: item.id,
-          workspace: inputs.workspace,
-          project: item.task_data?.project || inputs.project,
-          product: item.task_data?.product || reportProduct,
-          title: item.title,
-          role: item.role,
-          assignee: item.assigned_to_name || "",
-          priority: item.priority || "MEDIUM",
-          status: item.status || "To Do",
-          createdAt: item.created_at,
-        }));
-  
-        setTeamTasks(formatted);
-      } catch (error) {
-        console.error("Failed to load tasks", error);
-      }
-    };
-  
-    loadTasks();
-  }, [activeWorkspace?.id, inputs.workspace, inputs.project, reportProduct]);
   const logout = async () => {
     await supabase.auth.signOut();
     router.replace("/login");
@@ -997,7 +800,7 @@ setProducts(formatted);
       setCurrentWorkspaceMembership({ workspace_id: workspace.id, role: "founder_partner", has_full_access: true });
       setUserWorkspaces([workspace]);
       setNeedsWorkspaceSetup(false);
-      setInputs((previous) => ({ ...previous, workspace: workspace.name, project: "" }));
+      setInputs((previous) => ({ ...previous, workspace: workspace.name, project: "First Product Campaign" }));
       setActivityLogs([]);
       setSavedTests([]);
       setDailyReports([]);
@@ -1087,7 +890,6 @@ setProducts(formatted);
     dailyops: ["founder_partner", "marketer", "graphic_artist"],
     tasks: ["founder_partner", "marketer", "graphic_artist"],
     workspace: ["founder_partner", "marketer", "graphic_artist"],
-    helpcenter: ["founder_partner", "marketer", "graphic_artist"],
     cloud: ["founder_partner"],
   };
 
@@ -1130,7 +932,6 @@ setProducts(formatted);
         { label: "Marketing Team", icon: Users, hint: "Members + roles", value: "team", roles: ["founder_partner"] },
         { label: "Campaign Memory", icon: Database, hint: "Saved snapshots", value: "campaigns", roles: ["founder_partner", "marketer"] },
         { label: "System Setup", icon: Cloud, hint: "Cloud database plan", value: "cloud", roles: ["founder_partner"] },
-        { label: "Help Center", icon: ShieldCheck, hint: "SOPs + User Guides", value: "helpcenter", roles: ["founder_partner", "marketer", "graphic_artist"] },
       ],
     },
   ];
@@ -1151,7 +952,7 @@ setProducts(formatted);
   }, [authUser?.id, workspaceLoading, activeMainTab, systemRole, hasFullWorkspaceAccess]);
 
   const showTestInputPanel = ["plan", "test", "flow", "variation", "learning", "profitability"].includes(activeMainTab);
-  const activeScope = reportProduct ? `${inputs.workspace} / ${reportProduct}` : inputs.workspace;
+  const activeScope = [inputs.workspace, reportProduct || inputs.project].filter(Boolean).join(" / ");
   const activeProductReports = dailyReports.filter((report) => report.workspace === inputs.workspace && report.product === reportProduct);
   const activeProductAssets = productAssets.filter((asset) => asset.workspace === inputs.workspace && asset.product === reportProduct);
   const activeWorkspaceMembers = workspaceMembers.filter((member) => member.workspace === inputs.workspace);
@@ -1691,105 +1492,46 @@ setProducts(formatted);
     addActivityLog(`Added ${assetType} asset for ${reportProduct}: ${cleanTitle}`);
   };
 
-  const addProduct = async () => {
-    if (!newProductName.trim()) return;
-    if (!activeWorkspace?.id) return;
-  
-    try {
-      const created = await createWorkspaceProduct(
-        activeWorkspace.id,
-        newProductName
-      );
-  
-      const formatted = {
-        id: created.id,
-        name: created.name,
-        niche: created.niche || "General",
-        status: created.status || "Active",
-        notes: created.notes || "",
-      };
-  
-      setProducts((prev: any) => [created.name, ...prev]);
-  
-      setNewProductName("");
-  
-      addActivityLog(`Added product: ${created.name}`);
-    } catch (error) {
-      console.error("Failed to create product", error);
-    }
+  const addProduct = () => {
+    const cleanProduct = newProductName.trim();
+    if (!cleanProduct) return;
+
+    setProducts((prev) => prev.includes(cleanProduct) ? prev : [cleanProduct, ...prev]);
+    setReportProduct(cleanProduct);
+    setNewProductName("");
+    addActivityLog(`Added product: ${cleanProduct}`);
   };
 
-  const submitMediaBuyerReport = async () => {
-  if (!activeWorkspace?.id || !authUser?.id) return;
-
-  try {
-    const created = await createMediaBuyerReport({
-      workspaceId: activeWorkspace.id,
-      productName: reportProduct,
-      reportData: mediaBuyerReport,
-      userId: authUser.id,
-    });
-
-    const formatted = {
-      id: created.id,
+  const submitMediaBuyerReport = () => {
+    const report = {
+      id: Date.now(),
       workspace: inputs.workspace,
-      product: created.product_name,
-      type: created.report_type,
-      date: created.created_at,
-      data: created.report_data,
+      product: reportProduct,
+      type: "Media Buyer",
+      date: new Date().toLocaleDateString(),
+      data: { ...mediaBuyerReport }
     };
 
-    setDailyReports((prev: any) => [formatted, ...prev]);
+    setDailyReports((prev) => [report, ...prev]);
+    update("project", reportProduct);
+    update("product", reportProduct);
+    update("adSpend", Number(mediaBuyerReport.spend || 0));
+    addActivityLog(`Submitted media buyer report for ${reportProduct}`);
+  };
 
-    setMediaBuyerReport({
-      spend: 3000,
-      ctr: 2.8,
-      cpc: 8,
-      cpp: 120,
-      roas: 2.6,
-      winningAngle: "",
-      action: "",
-      notes: "",
-    });
-
-    addActivityLog(
-      `Media Buyer submitted report for ${reportProduct}`
-    );
-  } catch (error) {
-    console.error("Failed to submit media buyer report", error);
-  }
-};
-    
-
-const submitDesignerReport = async () => {
-  if (!activeWorkspace?.id || !authUser?.id) return;
-
-  try {
-    const created = await createDesignerReport({
-      workspaceId: activeWorkspace.id,
-      productName: reportProduct,
-      reportData: designerReport,
-      userId: authUser.id,
-    });
-
-    const formatted = {
-      id: created.id,
+  const submitDesignerReport = () => {
+    const report = {
+      id: Date.now(),
       workspace: inputs.workspace,
-      product: created.product_name,
-      type: created.report_type,
-      date: created.created_at,
-      data: created.report_data,
+      product: reportProduct,
+      type: "Designer",
+      date: new Date().toLocaleDateString(),
+      data: { ...designerReport }
     };
 
-    setDailyReports((prev: any) => [formatted, ...prev]);
-
-    addActivityLog(
-      `Submitted designer report for ${reportProduct}`
-    );
-  } catch (error) {
-    console.error("Failed to submit designer report", error);
-  }
-};
+    setDailyReports((prev) => [report, ...prev]);
+    addActivityLog(`Submitted designer report for ${reportProduct}`);
+  };
 
   const generateDailyMarketingReport = () => {
     const productTests = savedTests.filter((test) => test.workspace === inputs.workspace && test.product === reportProduct);
@@ -2012,172 +1754,80 @@ const submitDesignerReport = async () => {
     setNoteInput("");
   };
 
-  const addManualTask = async () => {
-    if (!activeWorkspace?.id || !authUser?.id) return;
-  
+  const addManualTask = () => {
     const cleanTitle = newTaskTitle.trim();
-  
     if (!cleanTitle) return;
-  
-    try {
-      const created = await createWorkspaceTask({
-        workspaceId: activeWorkspace.id,
-        title: cleanTitle,
-        role: newTaskRole,
-        assignedToName: newTaskAssignee || "Unassigned",
-        priority: newTaskPriority,
-        status: newTaskStatus,
-        taskData: {
-          workspace: inputs.workspace,
-          project: inputs.project,
-          product: reportProduct,
-          dueDate: newTaskDueDate || "No due date",
-        },
-        userId: authUser.id,
-      });
-  
-      const formatted = {
-        id: created.id,
+
+    const newTask = {
+      id: Date.now(),
+      workspace: inputs.workspace,
+      project: reportProduct || inputs.project,
+      role: newTaskRole,
+      assignee: newTaskAssignee || "Unassigned",
+      title: cleanTitle,
+      priority: newTaskPriority,
+      status: newTaskStatus,
+      dueDate: newTaskDueDate || "No due date"
+    };
+
+    setTeamTasks((prev) => [newTask, ...prev]);
+    addActivityLog(`Created task: ${cleanTitle}`);
+    setNewTaskTitle("");
+    setNewTaskAssignee("");
+    setNewTaskRole("Media Buyer");
+    setNewTaskPriority("HIGH");
+    setNewTaskStatus("To Do");
+    setNewTaskDueDate("");
+  };
+
+  const toggleTaskStatus = (taskId) => {
+    setTeamTasks((prev) =>
+      prev.map((task) =>
+        task.id === taskId
+          ? {
+              ...task,
+              status: task.status === "Done" ? "To Do" : "Done"
+            }
+          : task
+      )
+    );
+  };
+
+  const generateAITasks = () => {
+    const generatedTasks = [
+      {
+        id: Date.now(),
         workspace: inputs.workspace,
         project: inputs.project,
-        product: reportProduct,
-        role: created.role,
-        assignee: created.assigned_to_name || "Unassigned",
-        title: created.title,
-        priority: created.priority,
-        status: created.status,
-        dueDate:
-          created.task_data?.dueDate || "No due date",
-        createdAt: created.created_at,
-      };
-  
-      setTeamTasks((prev) => [formatted, ...prev]);
-  
-      addActivityLog(`Created task: ${cleanTitle}`);
-  
-      setNewTaskTitle("");
-      setNewTaskAssignee("");
-      setNewTaskRole("Media Buyer");
-      setNewTaskPriority("HIGH");
-      setNewTaskStatus("To Do");
-      setNewTaskDueDate("");
-    } catch (error) {
-      console.error("Failed to create task", error);
-    }
-  };
-
-
-  const toggleTaskStatus = async (taskId) => {
-    try {
-      const existingTask = teamTasks.find(
-        (task) => task.id === taskId
-      );
-  
-      if (!existingTask) return;
-  
-      const newStatus =
-        existingTask.status === "Done"
-          ? "To Do"
-          : "Done";
-  
-      await updateWorkspaceTaskStatus(
-        taskId,
-        newStatus
-      );
-  
-      setTeamTasks((prev) =>
-        prev.map((task) =>
-          task.id === taskId
-            ? {
-                ...task,
-                status: newStatus,
-              }
-            : task
-        )
-      );
-    } catch (error) {
-      console.error(
-        "Failed to update task status",
-        error
-      );
-    }
-  };
-
-  const generateAITasks = async () => {
-    if (!activeWorkspace?.id || !authUser?.id) return;
-  
-    try {
-      const generatedTasks = [
-        {
-          role: "Copywriter",
-          assignee:
-            activeWorkspaceMembers.find(
-              (member) => member.role === "Copywriter"
-            )?.name || "Unassigned",
-          title: "Rewrite headline using softer emotional positioning",
-          priority: "HIGH",
-          status: "To Do",
-        },
-        {
-          role: "Designer",
-          assignee:
-            activeWorkspaceMembers.find(
-              (member) => member.role === "Designer"
-            )?.name || "Unassigned",
-          title: "Create testimonial-focused trust section visual",
-          priority: "MEDIUM",
-          status: "To Do",
-        },
-        {
-          role: "Media Buyer",
-          assignee:
-            activeWorkspaceMembers.find(
-              (member) => member.role === "Media Buyer"
-            )?.name || "Unassigned",
-          title: "Test Family Concern angle against Fear Based angle",
-          priority: "HIGH",
-          status: "To Do",
-        },
-      ];
-  
-      const savedTasks = [];
-  
-      for (const task of generatedTasks) {
-        const created = await createWorkspaceTask({
-          workspaceId: activeWorkspace.id,
-          title: task.title,
-          role: task.role,
-          assignedToName: task.assignee,
-          priority: task.priority,
-          status: task.status,
-          taskData: {
-            workspace: inputs.workspace,
-            project: inputs.project,
-            product: reportProduct,
-          },
-          userId: authUser.id,
-        });
-  
-        savedTasks.push({
-          id: created.id,
-          workspace: inputs.workspace,
-          project: inputs.project,
-          product: reportProduct,
-          role: created.role,
-          assignee: created.assigned_to_name || "Unassigned",
-          title: created.title,
-          priority: created.priority,
-          status: created.status,
-          createdAt: created.created_at,
-        });
+        role: "Copywriter",
+        assignee: activeWorkspaceMembers.find((member) => member.role === "Copywriter")?.name || "Unassigned",
+        title: "Rewrite headline using softer emotional positioning",
+        priority: "HIGH",
+        status: "Pending"
+      },
+      {
+        id: Date.now() + 1,
+        workspace: inputs.workspace,
+        project: inputs.project,
+        role: "Designer",
+        assignee: activeWorkspaceMembers.find((member) => member.role === "Designer")?.name || "Unassigned",
+        title: "Create testimonial-focused trust section visual",
+        priority: "MEDIUM",
+        status: "Pending"
+      },
+      {
+        id: Date.now() + 2,
+        workspace: inputs.workspace,
+        project: inputs.project,
+        role: "Media Buyer",
+        assignee: activeWorkspaceMembers.find((member) => member.role === "Media Buyer")?.name || "Unassigned",
+        title: "Test Family Concern angle against Fear Based angle",
+        priority: "HIGH",
+        status: "Pending"
       }
-  
-      setTeamTasks((prev) => [...savedTasks, ...prev]);
-  
-      addActivityLog("AI generated strategic tasks");
-    } catch (error) {
-      console.error("Failed to generate AI tasks", error);
-    }
+    ];
+
+    setTeamTasks((prev) => [...generatedTasks, ...prev]);
   };
 
   const exportWorkspaceReport = () => {
@@ -2652,7 +2302,7 @@ ${notesText}`;
           <div className="mt-6 rounded-3xl border border-emerald-400/20 bg-emerald-400/10 p-4">
             <p className="text-xs font-bold uppercase tracking-wide text-emerald-200">Active Workspace</p>
             <p className="mt-2 font-black text-white">{inputs.workspace}</p>
-            <p className="mt-1 text-xs text-slate-400">{reportProduct || "Main Workspace"}</p>
+            {reportProduct ? <p className="mt-1 text-xs text-slate-400">{reportProduct}</p> : null}
           </div>
         </aside>
 
@@ -2710,6 +2360,11 @@ ${notesText}`;
         >
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
+              {(inputs.workspace || reportProduct) ? (
+                <div className="mb-3 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-cyan-100">
+                  Active: {inputs.workspace || "No workspace"}{reportProduct ? ` / ${reportProduct}` : " / No product selected"}
+                </div>
+              ) : null}
               <h1 className="text-3xl font-black tracking-tight text-white md:text-5xl">Spryve Intelligence System</h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 md:text-base">
                 AI strategist for ecommerce ads, landing page optimization, profitability checks, creative intelligence, and systematic scaling decisions based on actual data.
@@ -2788,7 +2443,6 @@ ${notesText}`;
                 <TabsTrigger value="tasks" className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-slate-900">Tasks</TabsTrigger>
                 <TabsTrigger value="workspace" className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-slate-900">Product Workspace</TabsTrigger>
                 <TabsTrigger value="cloud" className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-slate-900">Cloud Setup</TabsTrigger>
-                <TabsTrigger value="helpcenter" className="rounded-xl data-[state=active]:bg-white data-[state=active]:text-slate-900">Help Center</TabsTrigger>
               </TabsList>
 
               <TabsContent value="diagnosis" className="mt-5">
@@ -4264,12 +3918,6 @@ ${notesText}`;
                             </div>
                             <Input type="date" value={newTaskDueDate} onChange={(event) => setNewTaskDueDate(event.target.value)} className="rounded-xl border-slate-200 bg-white" />
                             <Button onClick={addManualTask} className="rounded-xl bg-slate-900 hover:bg-slate-800">Create Task</Button>
-                            <Button
-  onClick={generateAITasks}
-  className="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90"
->
-  Generate AI Tasks
-</Button>
                           </div>
                         </div>
 
@@ -4330,27 +3978,7 @@ ${notesText}`;
                                       <p>Assignee: {task.assignee || "Unassigned"}</p>
                                       <p>Due: {task.dueDate || "No due date"}</p>
                                     </div>
-                                    <select
-  value={task.status}
-  onChange={async (event) => {
-    const newStatus = event.target.value;
-
-    try {
-      await updateWorkspaceTaskStatus(task.id, newStatus);
-
-      setTeamTasks((prev) =>
-        prev.map((item) =>
-          item.id === task.id
-            ? { ...item, status: newStatus }
-            : item
-        )
-      );
-    } catch (error) {
-      console.error("Failed to update task status", error);
-    }
-  }}
-  className="mt-3 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 outline-none"
->
+                                    <select value={task.status} onChange={(event) => setTeamTasks((prev) => prev.map((item) => item.id === task.id ? { ...item, status: event.target.value } : item))} className="mt-3 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 outline-none">
                                       <option>To Do</option>
                                       <option>In Progress</option>
                                       <option>For Review</option>
@@ -4639,202 +4267,6 @@ ${notesText}`;
                   </Card>
                 </div>
               </TabsContent>
-            
-
-<TabsContent value="helpcenter" className="mt-5">
-  <Card className="rounded-[2rem] bg-white text-slate-900 shadow-xl">
-    <CardContent className="p-8">
-      <Badge className="mb-3 bg-blue-50 text-blue-700 hover:bg-blue-50">
-        Spryve Intelligence SOP
-      </Badge>
-
-      <h2 className="text-3xl font-black">Help Center</h2>
-      <p className="mt-2 max-w-3xl text-slate-600">
-        Use this guide to understand the daily workflow, role responsibilities, and module usage inside Spryve Intelligence.
-      </p>
-
-<div className="mt-6 space-y-4">
-
-  <HelpAccordion
-    title="Dashboard Guide"
-    open={helpSections.dashboard}
-    onToggle={() =>
-      setHelpSections({
-        ...helpSections,
-        dashboard: !helpSections.dashboard,
-      })
-    }
-  >
-    <div className="space-y-3">
-      <p>
-        The Dashboard is the main intelligence center of Spryve Intelligence.
-      </p>
-
-      <p>
-        Use this module daily to review:
-      </p>
-
-      <ul className="list-disc space-y-1 pl-5">
-        <li>Revenue</li>
-        <li>ROAS</li>
-        <li>CPP</li>
-        <li>RTS Risk</li>
-        <li>Scaling Signals</li>
-      </ul>
-
-      <div className="rounded-2xl bg-slate-50 p-4">
-        <p className="font-bold">Daily Workflow:</p>
-
-        <ol className="mt-2 list-decimal space-y-1 pl-5">
-          <li>Open Dashboard after login.</li>
-          <li>Review current product performance.</li>
-          <li>Check scaling recommendation.</li>
-          <li>Identify weak metrics.</li>
-          <li>Create action tasks if needed.</li>
-        </ol>
-      </div>
-    </div>
-    </HelpAccordion>
-
-  <HelpAccordion
-    title="Reporting Center Guide"
-    open={helpSections.reporting}
-    onToggle={() =>
-      setHelpSections({
-        ...helpSections,
-        reporting: !helpSections.reporting,
-      })
-    }
-  >
-    <div className="space-y-3">
-      <p>
-        Reporting Center is used by media buyers and designers to submit daily reports.
-      </p>
-
-      <ul className="list-disc space-y-1 pl-5">
-        <li>Spend</li>
-        <li>ROAS</li>
-        <li>CPP</li>
-        <li>Winning angle</li>
-        <li>Creative status</li>
-      </ul>
-
-      <div className="rounded-2xl bg-slate-50 p-4">
-        <p className="font-bold">Important Rule:</p>
-        <p className="mt-2">
-          Every team member must submit reports before end of day.
-        </p>
-      </div>
-    </div>
-    </HelpAccordion> 
-
-  <HelpAccordion
-    title="Tasks Board Guide"
-    open={helpSections.tasks}
-    onToggle={() =>
-      setHelpSections({
-        ...helpSections,
-        tasks: !helpSections.tasks,
-      })
-    }
-  >
-    <div className="space-y-3">
-      <p>
-        Tasks board is the execution management system of Spryve Intelligence.
-      </p>
-
-      <ul className="list-disc space-y-1 pl-5">
-        <li>To Do = not started</li>
-        <li>In Progress = currently working</li>
-        <li>For Review = waiting approval</li>
-        <li>Done = completed</li>
-      </ul>
-
-      <div className="rounded-2xl bg-slate-50 p-4">
-        <p className="font-bold">Best Practice:</p>
-        <p className="mt-2">
-          Update task status immediately after progress changes.
-        </p>
-      </div>
-    </div>
-  </HelpAccordion>
-
-</div>
-      <div className="mt-6 grid gap-5 lg:grid-cols-2">
-        <div className="rounded-3xl border border-blue-100 bg-blue-50 p-5">
-          <h3 className="text-xl font-black">1. Daily Owner Workflow</h3>
-          <ul className="mt-4 space-y-2 text-sm text-slate-700">
-            <li>1. Login and check the active workspace.</li>
-            <li>2. Open Dashboard to review revenue, ROAS, CPP, RTS, and scaling status.</li>
-            <li>3. Open Reporting Center to review submitted reports.</li>
-            <li>4. Open Tasks to check team execution progress.</li>
-            <li>5. Decide: scale, improve, pause, or create new test.</li>
-          </ul>
-        </div>
-
-        <div className="rounded-3xl border border-emerald-100 bg-emerald-50 p-5">
-          <h3 className="text-xl font-black">2. Media Buyer SOP</h3>
-          <ul className="mt-4 space-y-2 text-sm text-slate-700">
-            <li>• Submit daily spend, ROAS, CTR, CPC, CPP, winning angle, and action.</li>
-            <li>• Use Reporting Center every end of day.</li>
-            <li>• Update campaign tasks in the Tasks board.</li>
-            <li>• Do not scale without checking CPP, ROAS, and RTS risk.</li>
-            <li>• Save important testing results in Campaign Memory.</li>
-          </ul>
-        </div>
-
-        <div className="rounded-3xl border border-violet-100 bg-violet-50 p-5">
-          <h3 className="text-xl font-black">3. Designer / Creative SOP</h3>
-          <ul className="mt-4 space-y-2 text-sm text-slate-700">
-            <li>• Submit creative type, angle, versions created, status, and asset link.</li>
-            <li>• Use Creative Intelligence for new angle ideas.</li>
-            <li>• Prioritize creatives based on winning ad angles.</li>
-            <li>• Use clear naming: Product - Angle - Version - Date.</li>
-            <li>• Move task status once creative is submitted for review.</li>
-          </ul>
-        </div>
-
-        <div className="rounded-3xl border border-amber-100 bg-amber-50 p-5">
-          <h3 className="text-xl font-black">4. Task Board Rules</h3>
-          <ul className="mt-4 space-y-2 text-sm text-slate-700">
-            <li>• To Do = task is assigned but not started.</li>
-            <li>• In Progress = currently being worked on.</li>
-            <li>• For Review = waiting for owner/team lead approval.</li>
-            <li>• Done = completed and approved.</li>
-            <li>• Always update task status before end of day.</li>
-          </ul>
-        </div>
-
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-          <h3 className="text-xl font-black">5. Module Guide</h3>
-          <ul className="mt-4 space-y-2 text-sm text-slate-700">
-            <li>• Dashboard: overall performance and quick diagnosis.</li>
-            <li>• AI Strategist: recommended next actions.</li>
-            <li>• Scaling Center: scale / hold / improve decision support.</li>
-            <li>• Reporting Center: daily ads and creative reports.</li>
-            <li>• Tasks: team execution board.</li>
-            <li>• Products: product memory and campaign tracking.</li>
-            <li>• Campaign Memory: saved testing snapshots.</li>
-          </ul>
-        </div>
-
-        <div className="rounded-3xl border border-rose-100 bg-rose-50 p-5">
-          <h3 className="text-xl font-black">6. Go-Live Checklist</h3>
-          <ul className="mt-4 space-y-2 text-sm text-slate-700">
-            <li>✅ Login tested</li>
-            <li>✅ Workspace created</li>
-            <li>✅ Product added</li>
-            <li>✅ Report submitted</li>
-            <li>✅ Task created</li>
-            <li>✅ Task status updated</li>
-            <li>✅ Data remains after refresh</li>
-          </ul>
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-</TabsContent>
-
               <TabsContent value="profitability" className="mt-5">
                 <div className="space-y-5">
                   <Card className="rounded-[2rem] bg-white text-slate-900 shadow-xl">
