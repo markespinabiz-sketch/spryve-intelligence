@@ -3844,9 +3844,8 @@ ${notesText}`;
                     </div>
 
                     <div className="flex flex-wrap gap-3">
-                      <Button className="rounded-2xl bg-white text-slate-900 shadow-lg hover:bg-slate-100">
+                      <Button onClick={generateAITasks} className="rounded-2xl bg-white text-slate-900 shadow-lg hover:bg-slate-100">
                         <span className="font-semibold text-slate-900">Generate Tasks</span>
-                        Generate Tasks
                       </Button>
                       <Button variant="outline" className="rounded-2xl border-white/40 bg-white/15 text-white shadow-lg hover:bg-white/25">
                         Save To Board
@@ -3891,24 +3890,26 @@ ${notesText}`;
                   ))}
                 </div>
                 <div className="space-y-5">
-                  <Card className="rounded-[2rem] bg-slate-900 text-white shadow-xl">
-                    <CardContent className="p-5">
-                      <div className="grid gap-4 lg:grid-cols-[1fr_360px] lg:items-center">
+                  <Card className="rounded-[2rem] border border-slate-200 bg-white text-slate-900 shadow-xl">
+                    <CardContent className="p-6">
+                      <div className="grid gap-5 lg:grid-cols-[1fr_360px] lg:items-center">
                         <div>
-                          <Badge className="mb-3 bg-white/10 text-cyan-100 hover:bg-white/10">Kanban Operating Mode</Badge>
-                          <h2 className="text-2xl font-black">My Tasks + Team Kanban</h2>
-                          <p className="mt-2 text-sm leading-6 text-slate-300">Owner or team lead creates the tasks. Team members update their own task status from To Do → In Progress → For Review → Done.</p>
+                          <Badge className="mb-3 border border-cyan-200 bg-cyan-50 text-cyan-800 hover:bg-cyan-50">Kanban Operating Mode</Badge>
+                          <h2 className="text-2xl font-black text-slate-900">My Tasks + Team Kanban</h2>
+                          <p className="mt-2 text-sm leading-7 text-slate-700">
+                            Owner or team lead creates the tasks. Team members update their own task status from <span className="font-bold text-slate-900">To Do</span> → <span className="font-bold text-blue-700">In Progress</span> → <span className="font-bold text-violet-700">For Review</span> → <span className="font-bold text-emerald-700">Done</span>.
+                          </p>
                         </div>
-                        <div className="grid gap-2 sm:grid-cols-2">
+                        <div className="grid gap-3 sm:grid-cols-2">
                           <label className="space-y-1">
-                            <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Viewing As</span>
-                            <select value={currentUser} onChange={(event) => setCurrentUser(event.target.value)} className="w-full rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-sm text-white outline-none">
+                            <span className="text-xs font-black uppercase tracking-wide text-slate-600">Viewing As</span>
+                            <select value={currentUser} onChange={(event) => setCurrentUser(event.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100">
                               {activeWorkspaceMembers.map((member) => <option key={member.id} value={member.name} className="text-slate-900">{member.name}</option>)}
                             </select>
                           </label>
                           <label className="space-y-1">
-                            <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Task View</span>
-                            <select value={taskViewMode} onChange={(event) => setTaskViewMode(event.target.value)} className="w-full rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-sm text-white outline-none">
+                            <span className="text-xs font-black uppercase tracking-wide text-slate-600">Task View</span>
+                            <select value={taskViewMode} onChange={(event) => setTaskViewMode(event.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100">
                               <option className="text-slate-900">All Tasks</option>
                               <option className="text-slate-900">My Tasks</option>
                             </select>
