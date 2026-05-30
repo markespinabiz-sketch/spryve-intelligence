@@ -946,6 +946,7 @@ export default function MarkuzConversionIntelligenceV2() {
     if (!activeWorkspace?.id) return;
     loadWorkspaceProducts(activeWorkspace.id);
     loadWorkspaceReports(activeWorkspace.id);
+    loadWorkspaceTasks(activeWorkspace.id);
   }, [activeWorkspace?.id]);
 
   useEffect(() => {
@@ -1548,6 +1549,37 @@ export default function MarkuzConversionIntelligenceV2() {
     }
   };
 
+  const loadWorkspaceTasks = async (workspaceId = activeWorkspace?.id) => {
+    if (!workspaceId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("workspace_tasks")
+        .select("id, title, role, assigned_to_name, priority, status, due_date, task_data, created_at")
+        .eq("workspace_id", workspaceId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const formattedTasks = (data || []).map((task) => ({
+        id: task.id,
+        workspace: inputs.workspace,
+        project: task.task_data?.product || task.task_data?.project || reportProduct || inputs.project,
+        role: task.role || task.task_data?.role || "Media Buyer",
+        assignee: task.assigned_to_name || task.task_data?.assignee || "Unassigned",
+        title: task.title,
+        priority: task.priority || "MEDIUM",
+        status: task.status || "To Do",
+        dueDate: task.due_date || task.task_data?.dueDate || "No due date",
+        createdAt: task.created_at,
+      }));
+
+      setTeamTasks(formattedTasks);
+    } catch (error) {
+      console.error("Failed to load tasks from Supabase", error);
+    }
+  };
+
   const addProduct = async () => {
     const cleanProduct = newProductName.trim();
     if (!cleanProduct) return;
@@ -1923,7 +1955,38 @@ export default function MarkuzConversionIntelligenceV2() {
     setNoteInput("");
   };
 
-  const addManualTask = () => {
+  const saveTaskToDatabase = async (task) => {
+    if (!activeWorkspace?.id || !authUser?.id) return null;
+
+    const { data, error } = await supabase
+      .from("workspace_tasks")
+      .insert({
+        workspace_id: activeWorkspace.id,
+        created_by: authUser.id,
+        title: task.title,
+        role: task.role,
+        assigned_to_name: task.assignee,
+        priority: task.priority,
+        status: task.status,
+        due_date: task.dueDate === "No due date" ? null : task.dueDate,
+        task_data: {
+          workspace: task.workspace,
+          project: task.project,
+          product: task.project,
+          assignee: task.assignee,
+          role: task.role,
+          priority: task.priority,
+          dueDate: task.dueDate,
+        },
+      })
+      .select("id, created_at")
+      .single();
+
+    if (error) throw error;
+    return data;
+  };
+
+  const addManualTask = async () => {
     const cleanTitle = newTaskTitle.trim();
     if (!cleanTitle) return;
 
@@ -1939,8 +2002,17 @@ export default function MarkuzConversionIntelligenceV2() {
       dueDate: newTaskDueDate || "No due date"
     };
 
-    setTeamTasks((prev) => [newTask, ...prev]);
-    addActivityLog(`Created task: ${cleanTitle}`);
+    try {
+      const savedTask = await saveTaskToDatabase(newTask);
+      const taskToAdd = savedTask ? { ...newTask, id: savedTask.id, createdAt: savedTask.created_at } : newTask;
+      setTeamTasks((prev) => [taskToAdd, ...prev]);
+      addActivityLog(`Created task in database: ${cleanTitle}`);
+    } catch (error) {
+      console.error("Failed to save task to Supabase", error);
+      setTeamTasks((prev) => [newTask, ...prev]);
+      addActivityLog(`Created task locally because database save failed: ${cleanTitle}`);
+    }
+
     setNewTaskTitle("");
     setNewTaskAssignee("");
     setNewTaskRole("Media Buyer");
@@ -1949,54 +2021,127 @@ export default function MarkuzConversionIntelligenceV2() {
     setNewTaskDueDate("");
   };
 
-  const toggleTaskStatus = (taskId) => {
+  const updateTaskStatus = async (taskId, nextStatus) => {
     setTeamTasks((prev) =>
       prev.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              status: task.status === "Done" ? "To Do" : "Done"
-            }
-          : task
+        task.id === taskId ? { ...task, status: nextStatus } : task
       )
     );
+
+    if (!activeWorkspace?.id) return;
+
+    try {
+      const { error } = await supabase
+        .from("workspace_tasks")
+        .update({ status: nextStatus })
+        .eq("id", taskId)
+        .eq("workspace_id", activeWorkspace.id);
+
+      if (error) throw error;
+      addActivityLog(`Updated task status to ${nextStatus}`);
+    } catch (error) {
+      console.error("Failed to update task status in Supabase", error);
+      addActivityLog(`Updated task status locally because database update failed: ${nextStatus}`);
+    }
   };
 
-  const generateAITasks = () => {
+  const toggleTaskStatus = (taskId) => {
+    const currentTask = teamTasks.find((task) => task.id === taskId);
+    const nextStatus = currentTask?.status === "Done" ? "To Do" : "Done";
+    updateTaskStatus(taskId, nextStatus);
+  };
+
+  const generateAITasks = async () => {
     const generatedTasks = [
       {
         id: Date.now(),
         workspace: inputs.workspace,
-        project: inputs.project,
+        project: reportProduct || inputs.project,
         role: "Copywriter",
         assignee: activeWorkspaceMembers.find((member) => member.role === "Copywriter")?.name || "Unassigned",
         title: "Rewrite headline using softer emotional positioning",
         priority: "HIGH",
-        status: "Pending"
+        status: "To Do",
+        dueDate: "No due date"
       },
       {
         id: Date.now() + 1,
         workspace: inputs.workspace,
-        project: inputs.project,
+        project: reportProduct || inputs.project,
         role: "Designer",
         assignee: activeWorkspaceMembers.find((member) => member.role === "Designer")?.name || "Unassigned",
         title: "Create testimonial-focused trust section visual",
         priority: "MEDIUM",
-        status: "Pending"
+        status: "To Do",
+        dueDate: "No due date"
       },
       {
         id: Date.now() + 2,
         workspace: inputs.workspace,
-        project: inputs.project,
+        project: reportProduct || inputs.project,
         role: "Media Buyer",
         assignee: activeWorkspaceMembers.find((member) => member.role === "Media Buyer")?.name || "Unassigned",
         title: "Test Family Concern angle against Fear Based angle",
         priority: "HIGH",
-        status: "Pending"
+        status: "To Do",
+        dueDate: "No due date"
       }
     ];
 
-    setTeamTasks((prev) => [...generatedTasks, ...prev]);
+    if (!activeWorkspace?.id || !authUser?.id) {
+      setTeamTasks((prev) => [...generatedTasks, ...prev]);
+      addActivityLog("Generated AI tasks locally.");
+      return;
+    }
+
+    try {
+      const payload = generatedTasks.map((task) => ({
+        workspace_id: activeWorkspace.id,
+        created_by: authUser.id,
+        title: task.title,
+        role: task.role,
+        assigned_to_name: task.assignee,
+        priority: task.priority,
+        status: task.status,
+        due_date: null,
+        task_data: {
+          workspace: task.workspace,
+          project: task.project,
+          product: task.project,
+          assignee: task.assignee,
+          role: task.role,
+          priority: task.priority,
+          dueDate: task.dueDate,
+        },
+      }));
+
+      const { data, error } = await supabase
+        .from("workspace_tasks")
+        .insert(payload)
+        .select("id, title, role, assigned_to_name, priority, status, due_date, task_data, created_at");
+
+      if (error) throw error;
+
+      const savedTasks = (data || []).map((task) => ({
+        id: task.id,
+        workspace: inputs.workspace,
+        project: task.task_data?.product || reportProduct || inputs.project,
+        role: task.role,
+        assignee: task.assigned_to_name || "Unassigned",
+        title: task.title,
+        priority: task.priority,
+        status: task.status,
+        dueDate: task.due_date || "No due date",
+        createdAt: task.created_at,
+      }));
+
+      setTeamTasks((prev) => [...savedTasks, ...prev]);
+      addActivityLog("Generated AI tasks and saved them to database.");
+    } catch (error) {
+      console.error("Failed to save AI tasks to Supabase", error);
+      setTeamTasks((prev) => [...generatedTasks, ...prev]);
+      addActivityLog("Generated AI tasks locally because database save failed.");
+    }
   };
 
   const exportWorkspaceReport = () => {
@@ -4206,7 +4351,7 @@ ${notesText}`;
                                       <p>Assignee: {task.assignee || "Unassigned"}</p>
                                       <p>Due: {task.dueDate || "No due date"}</p>
                                     </div>
-                                    <select value={task.status} onChange={(event) => setTeamTasks((prev) => prev.map((item) => item.id === task.id ? { ...item, status: event.target.value } : item))} className="mt-3 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 outline-none">
+                                    <select value={task.status} onChange={(event) => updateTaskStatus(task.id, event.target.value)} className="mt-3 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 outline-none">
                                       <option>To Do</option>
                                       <option>In Progress</option>
                                       <option>For Review</option>
