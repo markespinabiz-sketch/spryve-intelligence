@@ -1210,7 +1210,7 @@ setProducts(formatted);
   }, [authUser?.id, workspaceLoading, activeMainTab, systemRole, hasFullWorkspaceAccess]);
 
   const showTestInputPanel = ["plan", "test", "flow", "variation", "learning", "profitability"].includes(activeMainTab);
-  const activeScope = inputs.workspace + " / " + inputs.project;
+  const activeScope = `${inputs.workspace} / ${reportProduct}`;
   const activeProductReports = dailyReports.filter((report) => report.workspace === inputs.workspace && report.product === reportProduct);
   const activeProductAssets = productAssets.filter((asset) => asset.workspace === inputs.workspace && asset.product === reportProduct);
   const activeWorkspaceMembers = workspaceMembers.filter((member) => member.workspace === inputs.workspace);
@@ -2769,8 +2769,10 @@ ${notesText}`;
         >
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
-              <Badge className="mb-3 rounded-full bg-cyan-400/15 text-cyan-200 hover:bg-cyan-400/15">Prototype V2</Badge>
-              <div className="mb-3 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-cyan-100">Active: {activeScope}</div>
+             
+            <div className="mb-3 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-cyan-100">
+  Active: {activeScope}
+</div>
               <h1 className="text-3xl font-black tracking-tight text-white md:text-5xl">Spryve Intelligence System</h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 md:text-base">
                 AI strategist for ecommerce ads, landing page optimization, profitability checks, creative intelligence, and systematic scaling decisions based on actual data.
