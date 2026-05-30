@@ -1494,14 +1494,62 @@ export default function MarkuzConversionIntelligenceV2() {
     addActivityLog(`Added ${assetType} asset for ${reportProduct}: ${cleanTitle}`);
   };
 
-  const addProduct = () => {
+  const loadWorkspaceProducts = async (workspaceId = activeWorkspace?.id) => {
+    if (!workspaceId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, name, workspace_id, created_at")
+        .eq("workspace_id", workspaceId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const productNames = (data || []).map((product) => product.name).filter(Boolean);
+      setProducts(productNames);
+      setReportProduct((previous) => previous || productNames[0] || "");
+      setInputs((previous) => ({ ...previous, product: previous.product || productNames[0] || "" }));
+    } catch (error) {
+      console.error("Failed to load products from Supabase", error);
+    }
+  };
+
+  const addProduct = async () => {
     const cleanProduct = newProductName.trim();
     if (!cleanProduct) return;
 
-    setProducts((prev) => prev.includes(cleanProduct) ? prev : [cleanProduct, ...prev]);
-    setReportProduct(cleanProduct);
-    setNewProductName("");
-    addActivityLog(`Added product: ${cleanProduct}`);
+    if (!activeWorkspace?.id) {
+      setProducts((prev) => prev.includes(cleanProduct) ? prev : [cleanProduct, ...prev]);
+      setReportProduct(cleanProduct);
+      setNewProductName("");
+      addActivityLog(`Added product locally: ${cleanProduct}`);
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("products")
+        .insert({
+          workspace_id: activeWorkspace.id,
+          name: cleanProduct,
+        });
+
+      if (error) throw error;
+
+      setProducts((prev) => prev.includes(cleanProduct) ? prev : [cleanProduct, ...prev]);
+      setReportProduct(cleanProduct);
+      update("product", cleanProduct);
+      setNewProductName("");
+      addActivityLog(`Added product to database: ${cleanProduct}`);
+    } catch (error) {
+      console.error("Failed to save product to Supabase", error);
+      setProducts((prev) => prev.includes(cleanProduct) ? prev : [cleanProduct, ...prev]);
+      setReportProduct(cleanProduct);
+      update("product", cleanProduct);
+      setNewProductName("");
+      addActivityLog(`Added product locally because database save failed: ${cleanProduct}`);
+    }
   };
 
   const submitMediaBuyerReport = () => {
