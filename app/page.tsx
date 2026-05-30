@@ -947,6 +947,8 @@ export default function MarkuzConversionIntelligenceV2() {
     loadWorkspaceProducts(activeWorkspace.id);
     loadWorkspaceReports(activeWorkspace.id);
     loadWorkspaceTasks(activeWorkspace.id);
+    loadWorkspaceAdTests(activeWorkspace.id);
+    loadWorkspaceCampaigns(activeWorkspace.id);
   }, [activeWorkspace?.id]);
 
   useEffect(() => {
@@ -1580,6 +1582,62 @@ export default function MarkuzConversionIntelligenceV2() {
     }
   };
 
+  const loadWorkspaceAdTests = async (workspaceId = activeWorkspace?.id) => {
+    if (!workspaceId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("ad_tests")
+        .select("id, product_name, campaign_name, test_data, created_at")
+        .eq("workspace_id", workspaceId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const formattedTests = (data || []).map((test) => ({
+        id: test.id,
+        workspace: inputs.workspace,
+        project: test.product_name || test.test_data?.project || "",
+        product: test.product_name || test.test_data?.product || "",
+        campaignName: test.campaign_name || test.test_data?.campaignName || "",
+        savedAt: test.created_at,
+        ...(test.test_data || {}),
+      }));
+
+      setSavedTests(formattedTests);
+    } catch (error) {
+      console.error("Failed to load ad tests from Supabase", error);
+    }
+  };
+
+  const loadWorkspaceCampaigns = async (workspaceId = activeWorkspace?.id) => {
+    if (!workspaceId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("campaign_snapshots")
+        .select("id, name, product_name, snapshot_data, created_at")
+        .eq("workspace_id", workspaceId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const formattedCampaigns = (data || []).map((campaign) => ({
+        id: campaign.id,
+        workspace: inputs.workspace,
+        project: campaign.product_name || campaign.snapshot_data?.project || "",
+        product: campaign.product_name || campaign.snapshot_data?.product || "",
+        name: campaign.name,
+        savedAt: campaign.created_at,
+        ...(campaign.snapshot_data || {}),
+      }));
+
+      setSavedCampaigns(formattedCampaigns);
+    } catch (error) {
+      console.error("Failed to load campaign snapshots from Supabase", error);
+    }
+  };
+
   const addProduct = async () => {
     const cleanProduct = newProductName.trim();
     if (!cleanProduct) return;
@@ -2170,13 +2228,14 @@ ${notesText}`;
     setExportText(report);
   };
 
-  const saveCampaignSnapshot = () => {
-    const cleanName = campaignNameInput.trim() || `${inputs.project} Snapshot`;
+  const saveCampaignSnapshot = async () => {
+    const cleanName = campaignNameInput.trim() || `${reportProduct || inputs.project || "Campaign"} Snapshot`;
 
     const newCampaign = {
       id: Date.now(),
       workspace: inputs.workspace,
-      project: inputs.project,
+      project: reportProduct || inputs.project,
+      product: reportProduct || inputs.product,
       name: cleanName,
       savedAt: new Date().toLocaleString(),
       metrics: {
@@ -2192,9 +2251,45 @@ ${notesText}`;
       notes: activeProjectNotes.length,
     };
 
-    setSavedCampaigns((prev) => [newCampaign, ...prev]);
-    addActivityLog(`Saved campaign snapshot: ${cleanName}`);
-    setCampaignNameInput("");
+    if (!activeWorkspace?.id || !authUser?.id) {
+      setSavedCampaigns((prev) => [newCampaign, ...prev]);
+      addActivityLog(`Saved campaign snapshot locally: ${cleanName}`);
+      setCampaignNameInput("");
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("campaign_snapshots")
+        .insert({
+          workspace_id: activeWorkspace.id,
+          user_id: authUser.id,
+          product_name: reportProduct || inputs.product || inputs.project,
+          name: cleanName,
+          snapshot_data: newCampaign,
+        })
+        .select("id, name, product_name, snapshot_data, created_at")
+        .single();
+
+      if (error) throw error;
+
+      const savedCampaign = {
+        ...newCampaign,
+        id: data?.id || newCampaign.id,
+        name: data?.name || cleanName,
+        savedAt: data?.created_at || newCampaign.savedAt,
+        ...(data?.snapshot_data || {}),
+      };
+
+      setSavedCampaigns((prev) => [savedCampaign, ...prev]);
+      addActivityLog(`Saved campaign snapshot to database: ${cleanName}`);
+      setCampaignNameInput("");
+    } catch (error) {
+      console.error("Failed to save campaign snapshot to Supabase", error);
+      setSavedCampaigns((prev) => [newCampaign, ...prev]);
+      addActivityLog(`Saved campaign snapshot locally because database save failed: ${cleanName}`);
+      setCampaignNameInput("");
+    }
   };
 
   const currentWorkspaceCampaigns = savedCampaigns.filter(
@@ -2218,14 +2313,14 @@ ${notesText}`;
     setAdTestDraft((previous) => ({ ...previous, [key]: value }));
   };
 
-  const saveCurrentTest = () => {
+  const saveCurrentTest = async () => {
     const now = new Date().toLocaleString();
     const newTest = {
       workspace: inputs.workspace,
-      project: inputs.project,
-      product: inputs.product,
+      project: reportProduct || inputs.project,
+      product: reportProduct || inputs.product,
       id: Date.now(),
-      campaignName: adTestDraft.campaignName || inputs.project,
+      campaignName: adTestDraft.campaignName || reportProduct || inputs.project,
       adsetName: adTestDraft.adsetName || "Main Adset",
       creativeName: adTestDraft.creativeName || "Creative Test",
       audience: adTestDraft.audience || "Broad",
@@ -2254,9 +2349,46 @@ ${notesText}`;
       result: metrics.projectedProfit > 0 && metrics.currentCPP <= metrics.safeCPP ? "WINNER" : metrics.projectedProfit > 0 ? "PROMISING" : "WEAK"
     };
 
-    setSavedTests((prev) => [newTest, ...prev].slice(0, 50));
-    setLastSavedAt(now);
-    addActivityLog(`Saved test snapshot: ${newTest.scalingSignal}`);
+    if (!activeWorkspace?.id || !authUser?.id) {
+      setSavedTests((prev) => [newTest, ...prev].slice(0, 50));
+      setLastSavedAt(now);
+      addActivityLog(`Saved test snapshot locally: ${newTest.scalingSignal}`);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("ad_tests")
+        .insert({
+          workspace_id: activeWorkspace.id,
+          user_id: authUser.id,
+          product_name: reportProduct || inputs.product || inputs.project,
+          campaign_name: newTest.campaignName,
+          test_data: newTest,
+        })
+        .select("id, product_name, campaign_name, test_data, created_at")
+        .single();
+
+      if (error) throw error;
+
+      const savedTest = {
+        ...newTest,
+        id: data?.id || newTest.id,
+        product: data?.product_name || newTest.product,
+        campaignName: data?.campaign_name || newTest.campaignName,
+        savedAt: data?.created_at || now,
+        ...(data?.test_data || {}),
+      };
+
+      setSavedTests((prev) => [savedTest, ...prev].slice(0, 50));
+      setLastSavedAt(now);
+      addActivityLog(`Saved test snapshot to database: ${savedTest.scalingSignal}`);
+    } catch (error) {
+      console.error("Failed to save ad test to Supabase", error);
+      setSavedTests((prev) => [newTest, ...prev].slice(0, 50));
+      setLastSavedAt(now);
+      addActivityLog(`Saved test snapshot locally because database save failed: ${newTest.scalingSignal}`);
+    }
   };
 
   const loadSavedTest = (test) => {
