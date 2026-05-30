@@ -375,6 +375,25 @@ function ScoreBar({ label, value, note }) {
     </div>
   );
 }
+function HelpAccordion({ title, open, onToggle, children }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+      <button
+        onClick={onToggle}
+        className="flex w-full items-center justify-between px-4 py-3 text-left"
+      >
+        <span className="text-sm font-bold text-slate-900">{title}</span>
+        <span className="text-slate-400">{open ? "−" : "+"}</span>
+      </button>
+
+      {open && (
+        <div className="border-t border-slate-100 px-4 py-4">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function AwarenessPill({ label, active }) {
   return (
@@ -755,6 +774,14 @@ export default function MarkuzConversionIntelligenceV2() {
     "Performance Lab": false,
     "Workspace": false,
   });
+  const [helpSections, setHelpSections] = useState({
+  dashboard: true,
+  reporting: false,
+  tasks: false,
+  products: false,
+  scaling: false,
+  campaigns: false,
+});
   useEffect(() => {
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
@@ -4687,6 +4714,113 @@ ${notesText}`;
         Use this guide to understand the daily workflow, role responsibilities, and module usage inside Spryve Intelligence.
       </p>
 
+<div className="mt-6 space-y-4">
+
+  <HelpAccordion
+    title="Dashboard Guide"
+    open={helpSections.dashboard}
+    onToggle={() =>
+      setHelpSections({
+        ...helpSections,
+        dashboard: !helpSections.dashboard,
+      })
+    }
+  >
+    <div className="space-y-3">
+      <p>
+        The Dashboard is the main intelligence center of Spryve Intelligence.
+      </p>
+
+      <p>
+        Use this module daily to review:
+      </p>
+
+      <ul className="list-disc space-y-1 pl-5">
+        <li>Revenue</li>
+        <li>ROAS</li>
+        <li>CPP</li>
+        <li>RTS Risk</li>
+        <li>Scaling Signals</li>
+      </ul>
+
+      <div className="rounded-2xl bg-slate-50 p-4">
+        <p className="font-bold">Daily Workflow:</p>
+
+        <ol className="mt-2 list-decimal space-y-1 pl-5">
+          <li>Open Dashboard after login.</li>
+          <li>Review current product performance.</li>
+          <li>Check scaling recommendation.</li>
+          <li>Identify weak metrics.</li>
+          <li>Create action tasks if needed.</li>
+        </ol>
+      </div>
+    </div>
+    </HelpAccordion>
+
+  <HelpAccordion
+    title="Reporting Center Guide"
+    open={helpSections.reporting}
+    onToggle={() =>
+      setHelpSections({
+        ...helpSections,
+        reporting: !helpSections.reporting,
+      })
+    }
+  >
+    <div className="space-y-3">
+      <p>
+        Reporting Center is used by media buyers and designers to submit daily reports.
+      </p>
+
+      <ul className="list-disc space-y-1 pl-5">
+        <li>Spend</li>
+        <li>ROAS</li>
+        <li>CPP</li>
+        <li>Winning angle</li>
+        <li>Creative status</li>
+      </ul>
+
+      <div className="rounded-2xl bg-slate-50 p-4">
+        <p className="font-bold">Important Rule:</p>
+        <p className="mt-2">
+          Every team member must submit reports before end of day.
+        </p>
+      </div>
+    </div>
+    </HelpAccordion> 
+
+  <HelpAccordion
+    title="Tasks Board Guide"
+    open={helpSections.tasks}
+    onToggle={() =>
+      setHelpSections({
+        ...helpSections,
+        tasks: !helpSections.tasks,
+      })
+    }
+  >
+    <div className="space-y-3">
+      <p>
+        Tasks board is the execution management system of Spryve Intelligence.
+      </p>
+
+      <ul className="list-disc space-y-1 pl-5">
+        <li>To Do = not started</li>
+        <li>In Progress = currently working</li>
+        <li>For Review = waiting approval</li>
+        <li>Done = completed</li>
+      </ul>
+
+      <div className="rounded-2xl bg-slate-50 p-4">
+        <p className="font-bold">Best Practice:</p>
+        <p className="mt-2">
+          Update task status immediately after progress changes.
+        </p>
+      </div>
+    </div>
+  </HelpAccordion>
+
+</div>
       <div className="mt-6 grid gap-5 lg:grid-cols-2">
         <div className="rounded-3xl border border-blue-100 bg-blue-50 p-5">
           <h3 className="text-xl font-black">1. Daily Owner Workflow</h3>
