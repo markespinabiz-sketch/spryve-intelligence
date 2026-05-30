@@ -2188,7 +2188,7 @@ ${notesText}`;
           </div>
           <Badge className="mb-3 bg-blue-50 text-blue-700 hover:bg-blue-50">Security Required</Badge>
           <h1 className="text-3xl font-black">Change your temporary password</h1>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
+          <p className="mt-2 text-sm leading-7 text-slate-700">
             Your account was created using a temporary password. Please create your own password before accessing the workspace.
           </p>
 
@@ -3844,10 +3844,11 @@ ${notesText}`;
                     </div>
 
                     <div className="flex flex-wrap gap-3">
-                      <Button className="rounded-2xl bg-white text-slate-900 hover:bg-slate-100">
+                      <Button className="rounded-2xl bg-white text-slate-900 shadow-lg hover:bg-slate-100">
+                        <span className="font-semibold text-slate-900">Generate Tasks</span>
                         Generate Tasks
                       </Button>
-                      <Button variant="outline" className="rounded-2xl border-white/30 bg-white/10 text-white hover:bg-white/20">
+                      <Button variant="outline" className="rounded-2xl border-white/40 bg-white/15 text-white shadow-lg hover:bg-white/25">
                         Save To Board
                       </Button>
                     </div>
@@ -3872,16 +3873,16 @@ ${notesText}`;
                       body: "ROAS still profitable but RTS increasing. Review targeting quality and confirmation process before scaling further.",
                     },
                   ].map((task) => (
-                    <Card key={task.title} className="rounded-[2rem] border-0 bg-white shadow-xl">
+                    <Card key={task.title} className="rounded-[2rem] border border-slate-200 bg-white shadow-xl">
                       <CardContent className="p-6">
-                        <Badge className="bg-violet-100 text-violet-700 hover:bg-violet-100">{task.priority}</Badge>
-                        <h3 className="mt-4 text-xl font-black text-slate-900">{task.title}</h3>
+                        <Badge className="border border-violet-200 bg-violet-100 text-violet-800 hover:bg-violet-100">{task.priority}</Badge>
+                        <h3 className="mt-4 text-xl font-black leading-tight text-slate-900">{task.title}</h3>
                         <p className="mt-2 text-sm leading-6 text-slate-600">{task.body}</p>
                         <div className="mt-5 flex gap-2">
-                          <Button size="sm" className="rounded-xl bg-slate-900 text-white hover:bg-slate-800">
+                          <Button size="sm" className="rounded-xl bg-slate-900 font-semibold text-white shadow-md hover:bg-slate-800">
                             Create Task
                           </Button>
-                          <Button size="sm" variant="outline" className="rounded-xl">
+                          <Button size="sm" variant="outline" className="rounded-xl border-slate-300 font-semibold text-slate-700">
                             Assign Team
                           </Button>
                         </div>
@@ -4377,7 +4378,7 @@ ${notesText}`;
                   <Card className="rounded-[2rem] bg-white text-slate-900 shadow-xl">
                     <CardContent className="p-6 md:p-8">
                       <Badge className="mb-3 bg-cyan-50 text-cyan-700 hover:bg-cyan-50">Module Manual</Badge>
-                      <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex flex-wrap items-center justify-between gap-4">
                         <div>
                           <h2 className="text-2xl font-black">How To Use Every Module</h2>
                           <p className="mt-1 text-sm text-slate-500">Operational guide for every Spryve Intelligence module.</p>
