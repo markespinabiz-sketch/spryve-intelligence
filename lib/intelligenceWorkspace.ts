@@ -5,6 +5,11 @@ import {
   type PlatformIntelligenceContext,
 } from "@/lib/platformContext";
 import {
+  scopedReportInput,
+  scopedTaskInput,
+  workspaceIdFor,
+} from "@/lib/intelligenceWorkspaceScope";
+import {
   createMediaBuyerReport,
   createWorkspaceTask,
   loadWorkspaceProducts,
@@ -25,16 +30,11 @@ export function createIntelligenceWorkspace(
 
   return {
     context,
-    loadProducts: () => loadWorkspaceProducts(context.workspaceId),
-    loadReports: () => loadWorkspaceReports(context.workspaceId),
-    loadTasks: () => loadWorkspaceTasks(context.workspaceId),
+    loadProducts: () => loadWorkspaceProducts(workspaceIdFor(context)),
+    loadReports: () => loadWorkspaceReports(workspaceIdFor(context)),
+    loadTasks: () => loadWorkspaceTasks(workspaceIdFor(context)),
     createMediaBuyerReport: (input: { productName: string; reportData: unknown }) =>
-      createMediaBuyerReport({
-        workspaceId: context.workspaceId,
-        productName: input.productName,
-        reportData: input.reportData,
-        userId: context.userId,
-      }),
+      createMediaBuyerReport(scopedReportInput(context, input)),
     createTask: (input: {
       productId?: string | null;
       title: string;
@@ -44,11 +44,6 @@ export function createIntelligenceWorkspace(
       priority: string;
       status: string;
       taskData?: unknown;
-    }) =>
-      createWorkspaceTask({
-        ...input,
-        workspaceId: context.workspaceId,
-        userId: context.userId,
-      }),
+    }) => createWorkspaceTask(scopedTaskInput(context, input)),
   };
 }
