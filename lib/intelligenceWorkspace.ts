@@ -9,6 +9,7 @@ import {
   scopedTaskInput,
   workspaceIdFor,
 } from "@/lib/intelligenceWorkspaceScope";
+import { persistenceFailureMessage } from "@/lib/persistencePolicy";
 import {
   createMediaBuyerReport,
   createWorkspaceTask,
@@ -16,6 +17,21 @@ import {
   loadWorkspaceReports,
   loadWorkspaceTasks,
 } from "@/lib/workspaceData";
+
+async function persistOrFailClosed<T>(
+  context: PlatformIntelligenceContext,
+  operation: string,
+  write: () => Promise<T>,
+) {
+  try {
+    return await write();
+  } catch (error) {
+    if (context.source === "platform") {
+      throw new Error(persistenceFailureMessage(operation), { cause: error });
+    }
+    throw error;
+  }
+}
 
 /**
  * Intelligence-owned adapter for persisted workspace workflows.
@@ -34,7 +50,9 @@ export function createIntelligenceWorkspace(
     loadReports: () => loadWorkspaceReports(workspaceIdFor(context)),
     loadTasks: () => loadWorkspaceTasks(workspaceIdFor(context)),
     createMediaBuyerReport: (input: { productName: string; reportData: unknown }) =>
-      createMediaBuyerReport(scopedReportInput(context, input)),
+      persistOrFailClosed(context, "Media buyer report", () =>
+        createMediaBuyerReport(scopedReportInput(context, input)),
+      ),
     createTask: (input: {
       productId?: string | null;
       title: string;
@@ -44,6 +62,9 @@ export function createIntelligenceWorkspace(
       priority: string;
       status: string;
       taskData?: unknown;
-    }) => createWorkspaceTask(scopedTaskInput(context, input)),
+    }) =>
+      persistOrFailClosed(context, "Workspace task", () =>
+        createWorkspaceTask(scopedTaskInput(context, input)),
+      ),
   };
 }
